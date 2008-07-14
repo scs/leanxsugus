@@ -51,9 +51,9 @@ host: $(SOURCES) ../inc/*.h ../lib/libosc_host.a  $(WEB_FILES)
 	@echo "Host executable done."
 	@cp $(OUT)$(HOST_SUFFIX) $(OUT)
 	@cp $(OUT) www/cgi-bin
-	cp www/cgi-bin/* /var/www/cgi-bin/
-	@chmod a+x /var/www/cgi-bin/$(OUT)
-	cp  www/* /var/www -r
+#	cp www/cgi-bin/* /var/www/cgi-bin/
+#	@chmod a+x /var/www/cgi-bin/$(OUT)
+#	cp  www/* /var/www -r
 	
 # Cleanup
 clean:	

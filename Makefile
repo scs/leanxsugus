@@ -18,16 +18,19 @@ ifeq ($(filter $(MAKECMDGOALS), clean distclean config), )
   endif
 endif
 
+# Compile options
+PEDANTIC = # -pedantic
+
 # Host-Compiler executables and flags
 HOST_CC = gcc 
-HOST_CFLAGS = $(HOST_FEATURES) -Wall -pedantic -DOSC_HOST -g
+HOST_CFLAGS = $(HOST_FEATURES) -Wall $(PEDANTIC) -DOSC_HOST -g
 HOST_LDFLAGS = -lm
 
 # Cross-Compiler executables and flags
 TARGET_CC = bfin-uclinux-gcc 
-TARGET_CFLAGS = -Wall -pedantic -O2 -DOSC_TARGET
-TARGETDBG_CFLAGS = -Wall -pedantic -ggdb3 -DOSC_TARGET
-TARGETSIM_CFLAGS = -Wall -pedantic -O2 -DOSC_TARGET -DOSC_SIM
+TARGET_CFLAGS = -Wall $(PEDANTIC) -O2 -DOSC_TARGET
+TARGETDBG_CFLAGS = -Wall $(PEDANTIC) -ggdb3 -DOSC_TARGET
+TARGETSIM_CFLAGS = -Wall $(PEDANTIC) -O2 -DOSC_TARGET -DOSC_SIM
 TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576" -lbfdsp
 
 # Source files of the application
@@ -44,31 +47,31 @@ $(OUT)_% :
 
 # Compiles the executable
 target: $(SOURCES) inc/*.h lib/libosc_target.a
-	@echo "Compiling for target.."
+	@echo "Compiling for target..."
 	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGET_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target executable done."
 	make target -C CGI
 	@echo "Target CGI done."
-	[ -d /tftpboot ] && cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT); exit 0
+	! [ -d /tftpboot ] || cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
 	
 targetdbg: $(SOURCES) inc/*.h lib/libosc_target.a
-	@echo "Compiling for target.."
+	@echo "Compiling for target..."
 	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGETDBG_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target executable done."
 	make targetdbg -C CGI
 	@echo "Target CGI done."
-	[ -d /tftpboot ] && cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT); exit 0
+	! [ -d /tftpboot ] || cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
 	
 targetsim: $(SOURCES) inc/*.h lib/libosc_target_sim.a
-	@echo "Compiling for target.."
+	@echo "Compiling for target..."
 	$(TARGET_CC) $(SOURCES) lib/libosc_target_sim.a $(TARGETSIM_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGETSIM_SUFFIX)
 	@echo "Target executable done."
 	make target -C CGI
 	@echo "Target CGI done."
-	[ -d /tftpboot ] && cp $(OUT)$(TARGETSIM_SUFFIX) /tftpboot/$(OUT); exit 0
+	! [ -d /tftpboot ] || cp $(OUT)$(TARGETSIM_SUFFIX) /tftpboot/$(OUT)
 	
 host: $(SOURCES) inc/*.h lib/libosc_host.a
 	@echo "Compiling for host.."
@@ -77,7 +80,7 @@ host: $(SOURCES) inc/*.h lib/libosc_host.a
 	@echo "Host executable done."
 	make host -C CGI
 	@echo "Host CGI done."
-	cp $(OUT)$(HOST_SUFFIX) $(OUT)
+	#cp $(OUT)$(HOST_SUFFIX) $(OUT)
 
 # Target to explicitly start the configuration process
 .PHONY : config

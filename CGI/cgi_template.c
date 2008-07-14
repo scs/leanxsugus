@@ -56,8 +56,7 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 	{
 		if(unlikely(*strSrc == '='))
 		{
-			/* Argument name parsed, find out which argument and continue
-			 * to parse its value. */
+			/* Argument name parsed, find out which argument and continue to parse its value. */
 			*strTemp = '\0';
 			pArg = NULL;
 			for(i = 0; i < sizeof(args)/sizeof(struct ARGUMENT); i++)
@@ -100,8 +99,7 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 			case INT_ARG:
 				if(sscanf(strTemp, "%d", (int*)pArg->pData) != 1)
 				{
-					OscLog(ERROR, "%s: Unable to parse int value of "
-							"variable \"%s\" (%s)!\n",
+					OscLog(ERROR, "%s: Unable to parse int value of variable \"%s\" (%s)!\n",
 							__func__, pArg->strName, strTemp);
 					return -EINVALID_PARAMETER;
 				}
@@ -109,8 +107,7 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 			case SHORT_ARG:
 			    if(sscanf(strTemp, "%hd", (short*)pArg->pData) != 1)
 			    {
-			        OscLog(ERROR, "%s: Unable to parse short value of "
-			                "variable \"%s\" (%s)!\n",
+			        OscLog(ERROR, "%s: Unable to parse short value of variable \"%s\" (%s)!\n",
 			                __func__, pArg->strName, strTemp);
 			        return -EINVALID_PARAMETER;
 			    }
@@ -124,8 +121,7 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 			    {
 			        *((bool*)pArg->pData) = FALSE;
 			    } else {
-			        OscLog(ERROR, "CGI %s: Unable to parse boolean value"
-			                "of variable \"%s\" (%s)!\n",
+			        OscLog(ERROR, "CGI %s: Unable to parse boolean value of variable \"%s\" (%s)!\n",
 			                __func__,
 			                pArg->strName,
 			                strTemp);
@@ -152,12 +148,14 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 				/* Unknown code */
 				code = '?';
 			}
-			*strTemp++ = code;
-			strSrc +=2; 
+			*strTemp = code;
+			strTemp += 1;
+			strSrc += 2; 
 		}     
 		else
 		{
-			*strTemp++ = *strSrc;
+			*strTemp = *strSrc;
+			strTemp += 1;
 		}
 	}
 	
@@ -317,7 +315,6 @@ int main()
 	 
 	 memset(&cgi, 0, sizeof(struct CGI_TEMPLATE));
 	 
-	   
      /* First, check if the algorithm is even running and ready for IPC
       * by looking if its socket exists.*/
      if(stat(USER_INTERFACE_SOCKET_PATH, &socketStat) != 0)
@@ -341,7 +338,7 @@ int main()
 	     OscDestroy(cgi.hFramework);
 	     return -1;
 	 }
-	 OscLogSetConsoleLogLevel(CRITICAL);
+	 OscLogSetConsoleLogLevel(DEBUG);
 	 OscLogSetFileLogLevel(DEBUG);
 	 
 	 err = OscIpcCreate(cgi.hFramework);

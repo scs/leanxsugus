@@ -8,6 +8,7 @@
 #include "inc/oscar.h"
 #include "debug.h"
 #include "template_ipc.h"
+#include "process_frame.h"
 #include <stdio.h>
 
 /*--------------------------- Settings ------------------------------*/
@@ -25,51 +26,48 @@
 /*! @brief The different states of a pending IPC request. */
 enum EnIpcRequestState
 {
-    REQ_STATE_IDLE,
-    REQ_STATE_ACK_PENDING,
-    REQ_STATE_NACK_PENDING
+	REQ_STATE_IDLE,
+	REQ_STATE_ACK_PENDING,
+	REQ_STATE_NACK_PENDING
 };
 
 /*! @brief Holds all the data needed for IPC with the user interface.*/
 struct IPC_DATA
 {
-    /*! @brief ID of the IPC channel used to communicate with the 
-     * webinterface. */
-    OSC_IPC_CHAN_ID             ipcChan;
-    /*! @brief An unacknowledged request. */
-    struct OSC_IPC_REQUEST      req;
-    /*! @brief The state of above IPC request. */
-    enum EnIpcRequestState      enReqState;
-    
-    /*! @brief All the information requested by the web interface is gathered
-     * here. */
-    struct APPLICATION_STATE	state;
+	/*! @brief ID of the IPC channel used to communicate with the 
+	 * webinterface. */
+	OSC_IPC_CHAN_ID ipcChan;
+	/*! @brief An unacknowledged request. */
+	struct OSC_IPC_REQUEST req;
+	/*! @brief The state of above IPC request. */
+	enum EnIpcRequestState enReqState;
+	
+	/*! @brief All the information requested by the web interface is gathered here. */
+	struct APPLICATION_STATE state;
 };
 
-/*! @brief The structure storing all important variables of the application.
- * */
+/*! @brief The structure storing all important variables of the application. */
 struct TEMPLATE
 {
-    /*! @brief The frame buffers for the frame capture device driver.*/
-    uint8               u8FrameBuffers[NR_FRAME_BUFFERS][OSC_CAM_MAX_IMAGE_HEIGHT*OSC_CAM_MAX_IMAGE_WIDTH];
-    /*! @brief A buffer to hold the resulting color image. */ 
-    uint8				u8ResultImage[3*OSC_CAM_MAX_IMAGE_WIDTH*OSC_CAM_MAX_IMAGE_HEIGHT];
-       
-    /*! @brief Handle to the framework instance. */
-    void                *hFramework;    
-   	/*! @brief Camera-Scene perspective */
-    enum EnOscCamPerspective perspective;
-    
+	/*! @brief The frame buffers for the frame capture device driver.*/
+	uint8 u8FrameBuffers[NR_FRAME_BUFFERS][OSC_CAM_MAX_IMAGE_HEIGHT*OSC_CAM_MAX_IMAGE_WIDTH];
+	/*! @brief A buffer to hold the resulting color image. */ 
+	uint8 u8ResultImage[3 * OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
+//	uint8 u8ResultImageGray[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT / 4];
+	
+	/*! @brief Handle to the framework instance. */
+	void *hFramework;
+	/*! @brief Camera-Scene perspective */
+	enum EnOscCamPerspective perspective;
+	
 #if defined(OSC_HOST) || defined(OSC_SIM)
-    /*! @brief File name reader for camera images on the host. */
-    void				*hFileNameReader;
+	/*! @brief File name reader for camera images on the host. */
+	void *hFileNameReader;
 #endif /* OSC_HOST or OSC_SIM */
-    /*! @brief The last raw image captured. Always points to one of the frame
-     * buffers. */
-    uint8*				pCurRawImg;
-    /*! @brief All data necessary for IPC. */
-    struct IPC_DATA     ipc;   
-
+	/*! @brief The last raw image captured. Always points to one of the frame buffers. */
+	uint8* pCurRawImg;
+	/*! @brief All data necessary for IPC. */
+	struct IPC_DATA ipc;
 };
 
 extern struct TEMPLATE data;
@@ -85,7 +83,7 @@ OSC_ERR Unload();
 /*********************************************************************//*!
  * @brief Give control to statemachine. 
  *
- * @return SUCCESS or an appropriate error code otherwise    
+ * @return SUCCESS or an appropriate error code otherwise.
  *
  * The function does never return normally except in error case.
  *//*********************************************************************/
@@ -121,16 +119,5 @@ OSC_ERR AckIpcRequests();
  * @param nPixels The number of pixels in the image.
  *//*********************************************************************/
 void IpcSendImage(fract16 *f16Image, uint32 nPixels);
-
-/*********************************************************************//*!
- * @brief Process a newly captured frame.
- * 
- * In the case of this template, this consists just of debayering the
- * image and writing the result to the result image buffer. This should 
- * be the starting point where you add your code.
- * 
- * @param pRawImg The raw image to process.
- *//*********************************************************************/
-void ProcessFrame(uint8 *pRawImg);
 
 #endif /*TEMPLATE_H_*/

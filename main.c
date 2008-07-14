@@ -1,8 +1,7 @@
 /*! @file main.c
- * @brief Main file of the template application. Mainly contains initialization
- * code.
+ * @brief Main file of the template application. Mainly contains initialization code.
  */
- #include "template.h"
+#include "template.h"
 #include <string.h>
 #include <sched.h>
 #include <errno.h>
@@ -24,8 +23,7 @@ struct OSC_DEPENDENCY deps[] = {
 };
 
 /*********************************************************************//*!
- * @brief Initialize everything so the application is fully operable
- * after a call to this function.
+ * @brief Initialize everything so the application is fully operable after a call to this function.
  * 
  * @return SUCCESS or an appropriate error code.
  *//*********************************************************************/
@@ -89,8 +87,7 @@ static OSC_ERR init(const int argc, const char * argv[])
         goto fb_err;
     }
       
-    /* Set up two frame buffers with enough space for the maximum
-     * camera resolution in cached memory. */
+    /* Set up two frame buffers with enough space for the maximum camera resolution in cached memory. */
     err = OscCamSetFrameBuffer(0, 
     				OSC_CAM_MAX_IMAGE_WIDTH*OSC_CAM_MAX_IMAGE_HEIGHT, 
     				data.u8FrameBuffers[0], 
@@ -141,6 +138,9 @@ static OSC_ERR init(const int argc, const char * argv[])
                  __func__);
     }       
     OscCamSetupPerspective( data.perspective);
+    
+    /* Initialieses the object recognition data structures. */
+    process_frame_init();
     
     return SUCCESS;
        

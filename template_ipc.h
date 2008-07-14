@@ -2,7 +2,7 @@
  * @brief Shared header file between application and its
  * CGI. Contains all information relevant to IPC between these two.
  */
- #ifndef TEMPLATE_IPC_H_
+#ifndef TEMPLATE_IPC_H_
 #define TEMPLATE_IPC_H_
 
 /* The parameter IDs to identify the different requests/responses.
@@ -10,9 +10,9 @@
 enum EnIpcParamIds
 {
 	GET_APP_STATE,
-    GET_COLOR_IMG,
-    GET_RAW_IMG,
-    SET_CAPTURE_MODE
+	GET_COLOR_IMG,
+	GET_RAW_IMG,
+	SET_CAPTURE_MODE
 };
 
 /*! @brief The path of the unix domain socket used for IPC between
@@ -22,14 +22,14 @@ enum EnIpcParamIds
 /*! @brief Describes a rectangular sub-area of an image. */
 struct IMG_RECT
 {
-    /*! @brief Rectangle width. */
-    uint16      width;
-    /*! @brief Rectangle height. */
-    uint16      height;
-    /*! @brief X Coordinate of the lower left corner.*/
-    uint16      xPos;
-    /*! @brief Y Coordinate of the lower left corne.*/
-    uint16      yPos;
+	/*! @brief Rectangle width. */
+	uint16		width;
+	/*! @brief Rectangle height. */
+	uint16		height;
+	/*! @brief X Coordinate of the lower left corner.*/
+	uint16		xPos;
+	/*! @brief Y Coordinate of the lower left corne.*/
+	uint16		yPos;
 };
 
 /*! @brief The different modes the application can be in. */
