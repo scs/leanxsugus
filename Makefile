@@ -41,7 +41,7 @@ all : $(OUT)
 
 $(OUT) : target host
 
-# this target ensures that the application has beeb built prior to deployment
+# this target ensures that the application has been built prior to deployment
 $(OUT)_% :
 	@ echo "Please use make {target,targetdbg,targetsim} to build the application first"; exit 1
 
@@ -80,7 +80,7 @@ host: $(SOURCES) inc/*.h lib/libosc_host.a
 	@echo "Host executable done."
 	make host -C CGI
 	@echo "Host CGI done."
-	#cp $(OUT)$(HOST_SUFFIX) $(OUT)
+#	cp $(OUT)$(HOST_SUFFIX) $(OUT)
 
 # Target to explicitly start the configuration process
 .PHONY : config

@@ -42,7 +42,9 @@ targetdbg: $(SOURCES) ../inc/*.h ../lib/libosc_target.a $(WEB_FILES)
 	$(TARGET_CC) $(SOURCES) ../lib/libosc_target.a $(TARGETDBG_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target CGI done."
-	cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)	
+	@mkdir -p www/cgi-bin
+	@cp $(OUT)$(TARGET_SUFFIX) www/cgi-bin/$(OUT)
+	@tar cfz www.tar.gz -C www .
 	
 host: $(SOURCES) ../inc/*.h ../lib/libosc_host.a  $(WEB_FILES)
 	@echo "Compiling for host.."
