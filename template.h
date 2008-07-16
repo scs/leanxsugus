@@ -8,7 +8,6 @@
 #include "inc/oscar.h"
 #include "debug.h"
 #include "template_ipc.h"
-#include "process_frame.h"
 #include <stdio.h>
 
 /*--------------------------- Settings ------------------------------*/
@@ -119,5 +118,8 @@ OSC_ERR AckIpcRequests();
  * @param nPixels The number of pixels in the image.
  *//*********************************************************************/
 void IpcSendImage(fract16 *f16Image, uint32 nPixels);
+
+void processFrame_init();
+void ProcessFrame(uint8 const * const pRawImg);
 
 #endif /*TEMPLATE_H_*/

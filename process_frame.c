@@ -2,7 +2,7 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include "process_frame.h"
+#include "template.h"
 // #include "framework_extensions.h"
 
 #define SEGMENT_POOL_COUNT 64
@@ -10,6 +10,16 @@
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
+
+#define printMark() printf("%s: Line %d\n", __func__, __LINE__)
+#define m printf("%s: Line %d\n", __func__, __LINE__);
+#define p(name) printf("%s: %ld\n", # name, name);
+
+void debugMark(uint16 const num)
+{
+	printf("<<%u>>", num);
+	fflush(stdout);
+}
 
 struct aSegment {
 	struct segment {
@@ -22,9 +32,12 @@ struct aSegment {
 
 struct aObject {
 	struct object {
-		uint16 left, right, top, bottom;
-		uint32 posWghtX, posWghtY;
-		uint32 weight;
+	//	uint16 left, right, top, bottom;
+	//	uint32 posWghtX, posWghtY;
+	//	uint32 weight;
+		unsigned short int left, right, top, bottom;
+		unsigned long int posWghtX, posWghtY;
+		unsigned long int weight;
 	//	struct object * pObjectMergedTo;
 		struct object * pPrev, * pNext;
 	} objects[OBJECT_POOL_COUNT];
@@ -112,6 +125,8 @@ void object_pool_deactivate (struct aObject * const pPool, struct object * const
  * @param maskLower If set, pixels with a value smaller than the threshold are masked with the smalles value (0).
  * @param maskUpper If set, pixels with a value of threshold or greater are masked with the largest value (255).
  */
+
+
 void applyThreshold(uint8 * const pImg, uint16 const width, uint16 const height, uint8 const threshold, bool const maskLower, bool const maskUpper)
 {
 	uint32 pos;
@@ -158,6 +173,7 @@ void applyThreshold(uint8 * const pImg, uint16 const width, uint16 const height,
 	}
 }
 
+
 /* void applyThreshold(uint8 * const pImg, uint16 const width, uint16 const height, uint8 const threshold, bool const maskLower, bool const maskUpper) {
 	uint32 pos;
 	
@@ -191,19 +207,19 @@ void findSegments(uint8 const * const pImg, uint16 const width, uint8 const valu
 {
 	uint16 i = 0;
 	
-	for (pSegs->numSegments = 0; pSegs->numSegments < SEGMENT_POOL_COUNT; pSegs->numSegments += 1)
+m	for (pSegs->numSegments = 0; pSegs->numSegments < SEGMENT_POOL_COUNT; pSegs->numSegments += 1)
 	{	
 		for (; i < width && pImg[i] != value; i += 1);
 		pSegs->segments[pSegs->numSegments].begin = i;
-		
+m		p(i)
 		for (; i < width && pImg[i] == value; i += 1);
 		/* we ended a segment, possibly at the end of the line */
 		pSegs->segments[pSegs->numSegments].end = i;
 		pSegs->segments[pSegs->numSegments].pObject = NULL;
-		
+m		p(i)
 		if (i == width)
 		{
-			break;
+m			break;
 		}
 	}
 	/* we hit the end of the line or ran out of segments */
@@ -222,17 +238,20 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 	struct object * create_object_for_segment(uint16 line, struct segment * pSeg)
 	{
 		struct object * obj = object_pool_getInactive(&object_pool);
-					
-		obj->left = pSeg->begin;
-		obj->right = pSeg->end;
-		obj->weight = obj->right - obj->left;
-		obj->top = line;
-		obj->bottom = line + 1;
-		obj->posWghtX = obj->weight * (obj->left + obj->right) / 2;
-		obj->posWghtY = obj->weight * line;
 		
-		object_pool_activate(&object_pool, obj);
-		pSeg->pObject = obj;
+		if (obj != NULL)
+		{
+			obj->left = pSeg->begin;
+			obj->right = pSeg->end;
+			obj->weight = obj->right - obj->left;
+			obj->top = line;
+			obj->bottom = line + 1;
+			obj->posWghtX = obj->weight * (obj->left + obj->right) / 2;
+			obj->posWghtY = obj->weight * line;
+			
+			object_pool_activate(&object_pool, obj);
+			pSeg->pObject = obj;
+		}
 		
 		return obj;
 	}
@@ -281,7 +300,8 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 	struct object * obj; /* This holds the object for the last segment processed. */
 	
 	/* This marks all objects as inactive. */
-	object_pool_init(&object_pool);
+	
+m	object_pool_init(&object_pool);
 	
 //	findSegments(pImg, width, value, segmentsCurrent);
 	segmentsCurrent->numSegments = 0;
@@ -291,28 +311,36 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 		/* swap the pointers to the last and the current segment array */
 		struct aSegment * segmentsTemp = segmentsLast;
 		segmentsLast = segmentsCurrent;
-		findSegments(pImg, width, value, segmentsCurrent = segmentsTemp);
+		findSegments(pImg + i * width, width, value, segmentsCurrent = segmentsTemp);
+		
+p(i)	for (iCurrent = 0; iCurrent < segmentsCurrent->numSegments; iCurrent += 1)
+		{
+			printf("begin: %u, end: %u\n",
+				segmentsCurrent->segments[iCurrent].begin,
+				segmentsCurrent->segments[iCurrent].end);
+		}
 		
 		iLast = iCurrent = 0;
 		
-		while (/* iLast < segmentsLast->numSegments
-			|| iCurrent < segmentsCurrent->numSegments*/ TRUE) /* this loops over all segments of the last and current line */
+		while (iLast < segmentsLast->numSegments
+			|| iCurrent < segmentsCurrent->numSegments) /* this loops over all segments of the last and current line */
 		{ /* both segmentsLast and segmentsCurrent point to a valid aSegment instance, but iLast and iCurrent may point past the end of the array. */
-			if (iLast < segmentsLast->numSegments)
+m			if (iLast < segmentsLast->numSegments)
 			{ /* We have segments on the last line so we check whether we have segments on the current line. */
-				if (iCurrent < segmentsCurrent->numSegments)
+m				if (iCurrent < segmentsCurrent->numSegments)
 				{ /* We do have segments on the last and the current line. */
-					if (segmentsLast->segments[iLast].begin
+m					if (segmentsLast->segments[iLast].begin
 							< segmentsCurrent->segments[iCurrent].end
 						&& segmentsCurrent->segments[iCurrent].begin
 							< segmentsLast->segments[iLast].end)
 					{ /* They do overlap so we merge the segment from the current line into the object from the segment from the last. */
-						obj = create_object_for_segment(i,
+m						obj = create_object_for_segment(i,
 							segmentsCurrent->segments + iCurrent);
-						obj = merge_objects(obj, segmentsLast->segments[iLast].pObject, segmentsCurrent);
+						obj = merge_objects(obj,segmentsLast->segments[iLast]
+							.pObject, segmentsCurrent);
 						
 						/* We need to check which segment ends first. */
-						if (segmentsLast->segments[iLast].end
+m						if (segmentsLast->segments[iLast].end
 							< segmentsCurrent->segments[iCurrent].end)
 						{
 							iLast += 1;
@@ -324,20 +352,24 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 					}
 					else
 					{ /* They do not overlap so we just have to create a new object for the segment of the current line. */
-						obj = create_object_for_segment(i, segmentsCurrent
+m						obj = create_object_for_segment(i, segmentsCurrent
 							->segments + iCurrent);
 						
 						iLast += 1;
 						iCurrent += 1;
 					}
 				}
+				else
+				{
+					iLast += 1;
+				}
 			}
 			else
 			{ /* We have no more segments on the last line so we need to create objects for all segments on the current line. */
-				for (; iCurrent < segmentsCurrent->numSegments;
-					segmentsCurrent->numSegments += 1)
+m				for (; iCurrent < segmentsCurrent->numSegments;
+					iCurrent += 1)
 				{
-					create_object_for_segment(i, segmentsCurrent->segments + iCurrent);
+m					create_object_for_segment(i, segmentsCurrent->segments + iCurrent);
 				}
 			}
 		}
@@ -352,7 +384,7 @@ void ProcessFrame(uint8 const * const pRawImg)
 	enum EnBayerOrder enBayerOrder;
 	uint16 row, col, width, height, greyCol, greyRow, greyWidth, greyHeight;
 	uint32 pos;
-	uint8 const threshold = 120;
+	uint8 const threshold = 30;
 	
 	/*! @brief Grayscale image with half the with an height */
 	static uint8 pGrayImg[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT / 4];
@@ -389,18 +421,18 @@ void ProcessFrame(uint8 const * const pRawImg)
 	/* masks parts of the image that contain an objcet */
 	applyThreshold(pGrayImg, greyWidth, greyHeight, threshold, TRUE, FALSE);
 	
-	{
+m	{
 		struct object * objs = findObjects(pGrayImg, greyWidth, greyHeight, threshold);
 		
-		for (; objs->pNext != NULL; objs = objs->pNext)
+		for (; objs != NULL; objs = objs->pNext)
 		{
-			printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu", objs->left, objs->right, objs->top, objs->bottom, objs->weight);
+			printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu\n", objs->left, objs->right, objs->top, objs->bottom, objs->weight);
 		}
 		
-		printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu", objs->left, objs->right, objs->top, objs->bottom, objs->weight);
+		printf("\n");
 	}
 	
-	for (greyRow = 0; greyRow < greyHeight; greyRow += 1)
+m	for (greyRow = 0; greyRow < greyHeight; greyRow += 1)
 	{
 		row = greyRow * 2;
 		for (greyCol = 0; greyCol < greyWidth; greyCol += 1)
@@ -444,6 +476,6 @@ void ProcessFrame(uint8 const * const pRawImg)
 */
 }
 
-void process_frame_init() {
+void processFrame_init() {
 //	segment_pools_init ();
 }

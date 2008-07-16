@@ -139,8 +139,16 @@ static OSC_ERR init(const int argc, const char * argv[])
     }       
     OscCamSetupPerspective( data.perspective);
     
-    /* Initialieses the object recognition data structures. */
-    process_frame_init();
+    /* Initialieses the object recognition data . */
+
+#if defined(LCV_HOST) || defined(LCV_SIM)
+	{
+		void * hTestImageReader;
+		
+		LCVFrdCreateFileListReader(hTestImageReader, "cam-file-list.txt")
+		LCVCamSetFileNameReader(hTestImageReader);
+	}
+#endif
     
     return SUCCESS;
        
