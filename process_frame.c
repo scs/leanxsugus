@@ -15,12 +15,6 @@
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 #define p(name) printf("%s: %ld\n", # name, name);
 
-void debugMark(uint16 const num)
-{
-	printf("<<%u>>", num);
-	fflush(stdout);
-}
-
 struct aSegment {
 	struct segment {
 		uint16 begin, end;
@@ -45,10 +39,25 @@ struct aObject {
 	struct object * pFirstInactive, * pFirstActive;
 } object_pool;
 
+void object_pool_dump(struct aObject const * const pPool)
+{
+	uint8 i;
+	
+	printf("pFirstInactive: %d\n", pPool->pFirstInactive - (pPool->objects));
+	printf("pFirstActive: %d\n", pPool->pFirstActive - (pPool->objects));
+	
+	for (i = 0; i < OBJECT_POOL_COUNT; i += 1)
+	{
+		printf("%u: %d, %d\n", i,
+			pPool->objects[i].pPrev - (pPool->objects),
+			pPool->objects[i].pNext - (pPool->objects));
+	}
+}
+
 /* initializes the object pool to a state where all objects are inactive */
 void object_pool_init (struct aObject * const pPool)
 {
-	int i;
+	uint8 i;
 	
 	for (i = 1; i < OBJECT_POOL_COUNT; i += 1)
 	{
@@ -61,6 +70,8 @@ void object_pool_init (struct aObject * const pPool)
 	
 	pPool->objects[0].pPrev = NULL;
 	pPool->objects[OBJECT_POOL_COUNT - 1].pNext = NULL;
+	
+m	object_pool_dump(&object_pool);
 }
 
 struct object * object_pool_getInactive (struct aObject const * const pPool)
@@ -75,26 +86,42 @@ struct object * object_pool_getActive (struct aObject const * const pPool)
 
 void object_pool_activate (struct aObject * const pPool, struct object * const pObj)
 {
+	printf("pObj: %d\n", pObj - pPool->objects);
 	/* First, we remove the object from the inactive list. */
-	if (pObj->pPrev != NULL)
+m	if (pObj->pPrev == NULL)
+	{ /* The object is at the begining of the inactive list. */
+		pPool->pFirstInactive = pObj->pNext;
+	}
+	else
 	{
 		pObj->pPrev->pNext = pObj->pNext;
 	}
-	if (pObj->pNext != NULL)
+m	if (pObj->pNext != NULL)
 	{
 		pObj->pNext->pPrev = pObj->pPrev;
 	}
 	
 	/* And then put it into the active list. */
-	pObj->pPrev = NULL;
-	pObj->pNext = pPool->pFirstActive;
-	pPool->pFirstActive = pObj;
+m	pObj->pPrev = NULL;
+m	pObj->pNext = pPool->pFirstActive;
+	if (pObj->pNext != NULL)
+	{
+m		pObj->pNext->pPrev = pObj;
+	}
+m	pPool->pFirstActive = pObj;
+	
+m	object_pool_dump(&object_pool);
 }
 
 void object_pool_deactivate (struct aObject * const pPool, struct object * const pObj)
 {
+	printf("pObj: %d\n", pObj - pPool->objects);
 	/* First, we remove the object from the active list. */
-	if (pObj->pPrev != NULL)
+	if (pObj->pPrev == NULL)
+	{
+		pPool->pFirstActive = pObj->pNext;
+	}
+	else
 	{
 		pObj->pPrev->pNext = pObj->pNext;
 	}
@@ -106,7 +133,13 @@ void object_pool_deactivate (struct aObject * const pPool, struct object * const
 	/* And then put it into the inactive list. */
 	pObj->pPrev = NULL;
 	pObj->pNext = pPool->pFirstInactive;
+	if (pObj->pNext != NULL)
+	{
+m		pObj->pNext->pPrev = pObj;
+	}
 	pPool->pFirstInactive = pObj;
+	
+m	object_pool_dump(&object_pool);
 }
 
 /*!
@@ -207,19 +240,23 @@ void findSegments(uint8 const * const pImg, uint16 const width, uint8 const valu
 {
 	uint16 i = 0;
 	
-m	for (pSegs->numSegments = 0; pSegs->numSegments < SEGMENT_POOL_COUNT; pSegs->numSegments += 1)
+m	for (pSegs->numSegments = 0; pSegs->numSegments < SEGMENT_POOL_COUNT;
+		pSegs->numSegments += 1)
 	{	
 		for (; i < width && pImg[i] != value; i += 1);
 		pSegs->segments[pSegs->numSegments].begin = i;
-m		p(i)
+		if (i == width)
+		{
+			break;
+		}
 		for (; i < width && pImg[i] == value; i += 1);
 		/* we ended a segment, possibly at the end of the line */
 		pSegs->segments[pSegs->numSegments].end = i;
 		pSegs->segments[pSegs->numSegments].pObject = NULL;
-m		p(i)
 		if (i == width)
 		{
-m			break;
+			pSegs->numSegments += 1;
+			break;
 		}
 	}
 	/* we hit the end of the line or ran out of segments */
@@ -257,7 +294,7 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 	}
 	
 	/* Merges two objects and re-labels the segments given. */
-	struct object * merge_objects (struct object * pObj1, struct object * pObj2, struct aSegment * pSegs)
+	struct object * merge_objects(struct object * pObj1, struct object * pObj2, struct aSegment * pSegs)
 	{
 		uint8 i;
 		
@@ -279,6 +316,7 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 			pObj1->posWghtX = pObj1->posWghtX + pObj2->posWghtX;
 			pObj1->posWghtY = pObj1->posWghtY + pObj2->posWghtY;
 			
+			/* Relabel all segments of the merged object. */
 			for (i = 0; i < pSegs->numSegments; i += 1)
 			{
 				if (pSegs->segments[i].pObject == pObj2)
@@ -325,22 +363,25 @@ p(i)	for (iCurrent = 0; iCurrent < segmentsCurrent->numSegments; iCurrent += 1)
 		while (iLast < segmentsLast->numSegments
 			|| iCurrent < segmentsCurrent->numSegments) /* this loops over all segments of the last and current line */
 		{ /* both segmentsLast and segmentsCurrent point to a valid aSegment instance, but iLast and iCurrent may point past the end of the array. */
-m			if (iLast < segmentsLast->numSegments)
+			if (iCurrent < segmentsCurrent->numSegments && obj != NULL)
+			{ /* If there is a segment on the current line, we create an object for it. */
+				obj = create_object_for_segment(i, segmentsCurrent->segments + iCurrent);
+			}
+			
+			if (iLast < segmentsLast->numSegments)
 			{ /* We have segments on the last line so we check whether we have segments on the current line. */
-m				if (iCurrent < segmentsCurrent->numSegments)
-				{ /* We do have segments on the last and the current line. */
-m					if (segmentsLast->segments[iLast].begin
+				if (iCurrent < segmentsCurrent->numSegments)
+				{ /* We do have segments on the last and the current line so we check if they overlap.. */
+					if (segmentsLast->segments[iLast].begin
 							< segmentsCurrent->segments[iCurrent].end
 						&& segmentsCurrent->segments[iCurrent].begin
 							< segmentsLast->segments[iLast].end)
 					{ /* They do overlap so we merge the segment from the current line into the object from the segment from the last. */
-m						obj = create_object_for_segment(i,
-							segmentsCurrent->segments + iCurrent);
-						obj = merge_objects(obj,segmentsLast->segments[iLast]
-							.pObject, segmentsCurrent);
+						obj = merge_objects(obj,
+							segmentsLast->segments[iLast].pObject, segmentsCurrent);
 						
 						/* We need to check which segment ends first. */
-m						if (segmentsLast->segments[iLast].end
+						if (segmentsLast->segments[iLast].end
 							< segmentsCurrent->segments[iCurrent].end)
 						{
 							iLast += 1;
@@ -352,8 +393,7 @@ m						if (segmentsLast->segments[iLast].end
 					}
 					else
 					{ /* They do not overlap so we just have to create a new object for the segment of the current line. */
-m						obj = create_object_for_segment(i, segmentsCurrent
-							->segments + iCurrent);
+						obj = NULL;
 						
 						iLast += 1;
 						iCurrent += 1;
@@ -366,11 +406,7 @@ m						obj = create_object_for_segment(i, segmentsCurrent
 			}
 			else
 			{ /* We have no more segments on the last line so we need to create objects for all segments on the current line. */
-m				for (; iCurrent < segmentsCurrent->numSegments;
-					iCurrent += 1)
-				{
-m					create_object_for_segment(i, segmentsCurrent->segments + iCurrent);
-				}
+				iCurrent += 1;
 			}
 		}
 	}
@@ -378,11 +414,41 @@ m					create_object_for_segment(i, segmentsCurrent->segments + iCurrent);
 	return object_pool_getActive(&object_pool);
 }
 
+void drawRectangle(uint8 * const pImg, uint16 const width, uint16 const left, uint16 const right, uint16 const top, uint16 const bottom, uint8 const color[3])
+{
+	uint16 i;
+	
+	/* Draw the horizontal lines. */
+	for (i = left; i < right; i += 1)
+	{
+		pImg[(width * top + i) * 3] = color[0];
+		pImg[(width * top + i) * 3 + 1] = color[1];
+		pImg[(width * top + i) * 3 + 2] = color[2];
+		
+		pImg[(width * (bottom - 1) + i) * 3] = color[0];
+		pImg[(width * (bottom - 1) + i) * 3 + 1] = color[1];
+		pImg[(width * (bottom - 1) + i) * 3 + 2] = color[2];
+	}
+	
+	/* Draw the vertical lines. */
+	for (i = top; i < bottom; i += 1)
+	{
+		pImg[(width * i + left) * 3] = color[0];
+		pImg[(width * i + left) * 3 + 1] = color[1];
+		pImg[(width * i + left) * 3 + 2] = color[2];
+		
+		pImg[(width * i + right - 1) * 3] = color[0];
+		pImg[(width * i + right - 1) * 3 + 1] = color[1];
+		pImg[(width * i + right - 1) * 3 + 2] = color[2];
+	}
+}
+
 void ProcessFrame(uint8 const * const pRawImg)
 {
 	OSC_ERR err;
 	enum EnBayerOrder enBayerOrder;
-	uint16 row, col, width, height, greyCol, greyRow, greyWidth, greyHeight;
+	uint16 row, col, greyCol, greyRow, greyWidth, greyHeight;
+	uint16 width = OSC_CAM_MAX_IMAGE_WIDTH, height = OSC_CAM_MAX_IMAGE_HEIGHT;
 	uint32 pos;
 	uint8 const threshold = 30;
 	
@@ -413,8 +479,6 @@ void ProcessFrame(uint8 const * const pRawImg)
 	}
 	/* Add your code here */
 	
-	width = OSC_CAM_MAX_IMAGE_WIDTH;
-	height = OSC_CAM_MAX_IMAGE_HEIGHT;
 	greyWidth = width / 2;
 	greyHeight = height / 2;
 	
@@ -422,11 +486,17 @@ void ProcessFrame(uint8 const * const pRawImg)
 	applyThreshold(pGrayImg, greyWidth, greyHeight, threshold, TRUE, FALSE);
 	
 m	{
-		struct object * objs = findObjects(pGrayImg, greyWidth, greyHeight, threshold);
+		struct object * objs = findObjects(pGrayImg, greyWidth, greyHeight, 0);
+		
+		object_pool_dump(&object_pool);
 		
 		for (; objs != NULL; objs = objs->pNext)
 		{
+			uint8 green[3] = {0, ~0, 0};
+			
 			printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu\n", objs->left, objs->right, objs->top, objs->bottom, objs->weight);
+			
+			drawRectangle(data.u8ResultImage, width, objs->left * 2, objs->right * 2, objs->top * 2, objs->bottom * 2, green);
 		}
 		
 		printf("\n");
