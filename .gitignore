@@ -3,6 +3,8 @@ lcv_log
 lcv_simlog
 template_host
 template_target
+osc_log
+osc_simlog
 
 # Ignore generated binaries
 *.[oa]
