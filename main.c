@@ -141,12 +141,12 @@ static OSC_ERR init(const int argc, const char * argv[])
     
     /* Initialieses the object recognition data . */
 
-#if defined(LCV_HOST) || defined(LCV_SIM)
+#if defined(OSC_HOST) || defined(OSC_SIM)
 	{
 		void * hTestImageReader;
 		
-		LCVFrdCreateFileListReader(hTestImageReader, "cam-file-list.txt")
-		LCVCamSetFileNameReader(hTestImageReader);
+		OscFrdCreateFileListReader(&hTestImageReader, "cam-file-list.txt");
+		OscCamSetFileNameReader(hTestImageReader);
 	}
 #endif
     
