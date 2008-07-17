@@ -6,7 +6,7 @@
 // #include "framework_extensions.h"
 
 #define SEGMENT_POOL_COUNT 64
-#define OBJECT_POOL_COUNT 254
+#define OBJECT_POOL_COUNT 64
 
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -22,6 +22,8 @@
 	#define m
 	#define p(name)
 #endif
+
+#define printf(a...)
 
 struct aSegment {
 	struct segment {
@@ -166,8 +168,6 @@ m		pObj->pNext->pPrev = pObj;
  * @param maskLower If set, pixels with a value smaller than the threshold are masked with the smalles value (0).
  * @param maskUpper If set, pixels with a value of threshold or greater are masked with the largest value (255).
  */
-
-
 void applyThreshold(uint8 * const pImg, uint16 const width, uint16 const height, uint8 const threshold, bool const maskLower, bool const maskUpper)
 {
 	uint32 pos;
@@ -302,9 +302,10 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 	}
 	
 	/* Merges two objects and re-labels the segments given. */
-	struct object * merge_objects(struct object * pObj1, struct object * pObj2, struct aSegment * pSegs)
+	struct object * merge_objects(struct object * pObj1, struct object * pObj2, struct aSegment * pSegs1, struct aSegment * pSegs2)
 	{
-		uint8 i;
+		printf("obj1: %u, obj2: %u\n", pObj1 - object_pool.objects,
+			pObj2 - object_pool.objects);
 		
 		if (pObj1 == NULL)
 		{
@@ -316,6 +317,8 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 		} 
 		else if (pObj1 != pObj2)
 		{ /* If the objects are not the same the second is merged into the first one. */
+			uint8 i;
+			
 			pObj1->left = min(pObj1->left, pObj2->left);
 			pObj1->right = max(pObj1->right, pObj2->right);
 			pObj1->weight = pObj1->weight + pObj2->weight;
@@ -325,11 +328,24 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 			pObj1->posWghtY = pObj1->posWghtY + pObj2->posWghtY;
 			
 			/* Relabel all segments of the merged object. */
-			for (i = 0; i < pSegs->numSegments; i += 1)
+			for (i = 0; i < pSegs1->numSegments; i += 1)
 			{
-				if (pSegs->segments[i].pObject == pObj2)
+				printf("pObject: %u, pObj2: %u\n",
+					pSegs1->segments[i].pObject - object_pool.objects,
+					pObj2 - object_pool.objects);
+				if (pSegs1->segments[i].pObject == pObj2)
 				{
-					pSegs->segments[i].pObject = pObj1;
+					pSegs1->segments[i].pObject = pObj1;
+				}
+			}
+			for (i = 0; i < pSegs2->numSegments; i += 1)
+			{
+				printf("pObject: %u, pObj2: %u\n",
+					pSegs2->segments[i].pObject - object_pool.objects,
+					pObj2 - object_pool.objects);
+				if (pSegs2->segments[i].pObject == pObj2)
+				{
+					pSegs2->segments[i].pObject = pObj1;
 				}
 			}
 			
@@ -374,6 +390,7 @@ m	object_pool_init(&object_pool);
 m				if (obj == NULL)
 				{ /* This means that we either moved on the current line or that we are on the first segment. So we create an object for the lower line. */
 					obj = create_object_for_segment(i, segmentsCurrent->segments + iCurrent);
+					printf("obj: %u\n", obj - object_pool.objects);
 				}
 				
 				/* So we check whether we also have segments on the last line. */
@@ -384,8 +401,8 @@ m					if (segmentsLast->segments[iLast].begin
 						&& segmentsCurrent->segments[iCurrent].begin
 							< segmentsLast->segments[iLast].end)
 					{ /* They do overlap so we merge the segment from the current line into the object from the segment from the last. */
-m						obj = merge_objects(obj,
-							segmentsLast->segments[iLast].pObject, segmentsCurrent);
+m						obj = merge_objects(
+							segmentsLast->segments[iLast].pObject, obj, segmentsLast, segmentsCurrent);
 						
 						/* We need to check which segment ends first. */
 						if (segmentsLast->segments[iLast].end
@@ -424,6 +441,15 @@ m					obj = NULL;
 			{ /* There are no segments on the current line left so we just skip the ones from the last line. */
 				iLast += 1;
 			}
+		}
+		
+		uint16 j;
+		for(j = 0; j < segmentsCurrent->numSegments; j += 1)
+		{
+			printf("line %u: %u: begin: %u, end: %u, object: %u\n", i, j,
+				segmentsCurrent->segments[j].begin,
+				segmentsCurrent->segments[j].end,
+				segmentsCurrent->segments[j].pObject - object_pool.objects);
 		}
 	}
 	
@@ -466,7 +492,7 @@ void ProcessFrame(uint8 const * const pRawImg)
 	uint16 row, col, greyCol, greyRow, greyWidth, greyHeight;
 	uint16 width = OSC_CAM_MAX_IMAGE_WIDTH, height = OSC_CAM_MAX_IMAGE_HEIGHT;
 	uint32 pos;
-	uint8 const threshold = 30;
+	uint8 const threshold = 40;
 	
 	/*! @brief Grayscale image with half the with an height */
 	static uint8 pGrayImg[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT / 4];
