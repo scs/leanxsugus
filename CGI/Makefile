@@ -1,5 +1,5 @@
 # The executable name is suffix depending on the target
-OUT = template.cgi
+OUT = leanxsugus.cgi
 HOST_SUFFIX = _host
 TARGET_SUFFIX = _target
 
@@ -15,7 +15,7 @@ TARGETDBG_CFLAGS = -Wall -pedantic -ggdb3 -DOSC_TARGET
 TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576"
 
 # Source files of the application
-SOURCES = cgi_template.c
+SOURCES = cgi.c
 
 # Files served by the web server
 WEB_FILES = www/*

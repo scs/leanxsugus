@@ -1,8 +1,8 @@
 # Ignore working files
 lcv_log
 lcv_simlog
-template_host
-template_target
+leanxsugus_host
+leanxsugus_target
 osc_log
 osc_simlog
 

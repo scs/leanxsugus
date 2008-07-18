@@ -1,7 +1,7 @@
 /*! @file main.c
  * @brief Implements the IPC handling of the template application.
  */
-#include "template.h"
+#include "leanxsugus.h"
 #include <string.h>
 
 OSC_ERR CheckIpcRequests(uint32 *pParamId)

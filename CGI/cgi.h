@@ -1,11 +1,11 @@
-/*! @file cgi_template.h
+/*! @file cgi_leanxsugus.h
  * @brief Header file of the CGI used for the webinterface of the 
  * template application.
  */
- #ifndef CGI_TEMPLATE_H_
-#define CGI_TEMPLATE_H_
+ #ifndef CGI_H_
+#define CGI_H_
 
-#include "../template_ipc.h"
+#include "../ipc.h"
 
 /*! @brief The maximum length of the POST argument string supplied
  * to this CGI.*/
@@ -72,4 +72,4 @@ struct CGI_TEMPLATE
 	/*! @brief Temporary data buffer for the images to be saved. */
 	uint8 imgBuf[3*OSC_CAM_MAX_IMAGE_WIDTH*OSC_CAM_MAX_IMAGE_HEIGHT];
 };
-#endif /*CGI_TEMPLATE_H_*/
+#endif /*CGI_H_*/

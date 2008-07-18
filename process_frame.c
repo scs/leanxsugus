@@ -2,7 +2,7 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include "template.h"
+#include "leanxsugus.h"
 // #include "framework_extensions.h"
 
 #define SEGMENT_POOL_COUNT 64

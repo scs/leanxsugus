@@ -3,7 +3,7 @@
  *
  * Makes use of Framework HSM module.
  ************************************************************************/
- #include "template.h"
+ #include "leanxsugus.h"
 #include "mainstate.h"
 #include <string.h>
 #include <stdlib.h>

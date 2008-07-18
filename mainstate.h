@@ -5,7 +5,7 @@
 #ifndef MAINSTATE_H
 #define MAINSTATE_H
 
-#include "template.h"
+#include "leanxsugus.h"
 
 enum MainStateEvents {
 	FRAMESEQ_EVT,		/* frame ready to process (before setting up next frame capture) */
