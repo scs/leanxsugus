@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include "../inc/oscar.h"
-#include "cgi_template.h"
+#include "cgi.h"
 
 #include <time.h>
 

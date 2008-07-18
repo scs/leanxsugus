@@ -1,7 +1,7 @@
 /*! @file main.c
  * @brief Main file of the template application. Mainly contains initialization code.
  */
-#include "template.h"
+#include "leanxsugus.h"
 #include <string.h>
 #include <sched.h>
 #include <errno.h>

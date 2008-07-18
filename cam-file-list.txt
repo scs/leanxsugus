@@ -1,1 +1,1 @@
-test-3.bmp
+test-2.bmp

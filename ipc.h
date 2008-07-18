@@ -2,8 +2,8 @@
  * @brief Shared header file between application and its
  * CGI. Contains all information relevant to IPC between these two.
  */
-#ifndef TEMPLATE_IPC_H_
-#define TEMPLATE_IPC_H_
+#ifndef IPC_H_
+#define IPC_H_
 
 /* The parameter IDs to identify the different requests/responses.
  */
@@ -53,4 +53,4 @@ struct APPLICATION_STATE
 	enum EnAppMode enAppMode;
 };
 
-#endif /*TEMPLATE_IPC_H_*/
+#endif /*IPC_H_*/

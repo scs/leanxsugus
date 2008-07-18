@@ -1,13 +1,13 @@
 /*! @file template.h
  * @brief Global header file for the template application.
  */
-#ifndef TEMPLATE_H_
-#define TEMPLATE_H_
+#ifndef LEANXSUGUS_H_
+#define LEANXSUGUS_H_
 
 /*--------------------------- Includes -----------------------------*/
 #include "inc/oscar.h"
 #include "debug.h"
-#include "template_ipc.h"
+#include "ipc.h"
 #include <stdio.h>
 
 /*--------------------------- Settings ------------------------------*/
@@ -122,4 +122,4 @@ void IpcSendImage(fract16 *f16Image, uint32 nPixels);
 void processFrame_init();
 void ProcessFrame(uint8 const * const pRawImg);
 
-#endif /*TEMPLATE_H_*/
+#endif /*LEANXSUGUS_H_*/
