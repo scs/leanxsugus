@@ -5,11 +5,6 @@
 #include "leanxsugus.h"
 // #include "framework_extensions.h"
 
-#define SEGMENT_POOL_COUNT 64
-#define OBJECT_POOL_COUNT 64
-
-int const segmentArray_size = 64;
-
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
@@ -33,7 +28,7 @@ typedef struct {
 	struct segment {
 		t_index begin, end;
 		struct object * pObject;
-	} segments[SEGMENT_POOL_COUNT];
+	} segments[64];
 	
 	t_index numSegments;
 } s_segmentArray;
@@ -44,7 +39,7 @@ typedef struct {
 		uint32 posWghtX, posWghtY;
 		uint32 weight;
 		struct object * pPrev, * pNext;
-	} objects[OBJECT_POOL_COUNT];
+	} objects[500];
 	
 	struct object * pFirst[2];
 } s_objectPool;
@@ -76,7 +71,7 @@ void objectPool_init (s_objectPool * const pPool)
 	}
 	
 	pPool->pFirst[0] = pPool->objects;
-	for (i = 1; i < length (pPool->objects); i += 1)
+	for (i = 1; i < length (pPool->pFirst); i += 1)
 	{
 		pPool->pFirst[i] = NULL;
 	}
@@ -438,14 +433,14 @@ void ProcessFrame(uint8 const * const pRawImg)
 	}
 	
 	/* Use a framework function to debayer the image. */
-	err = OscVisDebayer(pRawImg, OSC_CAM_MAX_IMAGE_WIDTH, OSC_CAM_MAX_IMAGE_HEIGHT, enBayerOrder, data.u8ResultImage);
+	err = OscVisDebayer(pRawImg, width, height, enBayerOrder, data.u8ResultImage);
 	if(err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Error debayering image! (%d)\n", __func__, err);
 		return;
 	}
 	
-	err = OscVisDebayerGrayscaleHalfSize (pRawImg, OSC_CAM_MAX_IMAGE_WIDTH, OSC_CAM_MAX_IMAGE_HEIGHT, enBayerOrder, pGrayImg);
+	err = OscVisDebayerGrayscaleHalfSize (pRawImg, width, height, enBayerOrder, pGrayImg);
 	if(err != SUCCESS)	
 	{
 		OscLog(ERROR, "%s: Error debayering image! (%d)\n", __func__, err);
@@ -485,12 +480,12 @@ void ProcessFrame(uint8 const * const pRawImg)
 			pos = (row * width + col) * 3;
 			grey = pGrayImg[greyRow * greyWidth + greyCol];
 			
-			if (grey == 0)
+		/*	if (grey == 0)
 			{
 				data.u8ResultImage[pos + 0] = 0;
 				data.u8ResultImage[pos + 1] = 0;
 				data.u8ResultImage[pos + 2] = ~0;
-			}
+			} */
 		}
 	}
 }
