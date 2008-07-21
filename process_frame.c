@@ -413,13 +413,42 @@ void drawRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 	}
 }
 
+void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, t_index const right, t_index const top, t_index const bottom, uint8 const color[3])
+{
+	uint16 ix, iy;
+	
+	/* Draw the vertical lines. */
+	for (iy = top; iy < bottom; iy += 1)
+	{
+		for (ix = left; ix < right; ix += 1)
+		{
+			pImg[(width * iy + ix) * 3] = color[0];
+			pImg[(width * iy + ix) * 3 + 1] = color[1];
+			pImg[(width * iy + ix) * 3 + 2] = color[2];
+		}
+	}
+}
+
+/* Maximize the saturation of a color. Black remains black. */
+void saturate(uint8 * const color)
+{
+	uint8 const max_component = max(color[0], max(color[1], color[2]));
+	uint8 const min_component = min(color[0], min(color[1], color[2]));
+	uint8 i;
+	
+	if (max_component > 0)
+		for (i = 0; i < 3; i += 1)
+			color[i] = (uint16) (color[i] - min_component) * 255 / (max_component - min_component);
+}
+
 void ProcessFrame(uint8 const * const pRawImg)
 {
 	OSC_ERR err;
 	enum EnBayerOrder enBayerOrder;
 	t_index row, col, greyCol, greyRow, greyWidth, greyHeight;
 	t_index width = OSC_CAM_MAX_IMAGE_WIDTH, height = OSC_CAM_MAX_IMAGE_HEIGHT;
-	uint8 const threshold = 40;
+	uint8 const thresholdValue = 50;
+	uint8 const thresholdWeight = 25;
 	
 	/*! @brief Grayscale image with half the with an height */
 	static uint8 pGrayImg[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT / 4];
@@ -451,24 +480,10 @@ void ProcessFrame(uint8 const * const pRawImg)
 	greyHeight = height / 2;
 	
 	/* masks parts of the image that contain an objcet */
-	applyThreshold(pGrayImg, greyWidth, greyHeight, threshold, TRUE, FALSE);
+	applyThreshold(pGrayImg, greyWidth, greyHeight, thresholdValue, TRUE, FALSE);
 	
-	{
-		struct object * objs = findObjects(pGrayImg, greyWidth, greyHeight, 0);
-		
-		for (; objs != NULL; objs = objs->pNext)
-		{
-			uint8 green[3] = {0, ~0, 0};
-			
-			printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu\n", objs->left, objs->right, objs->top, objs->bottom, objs->weight);
-			
-			drawRectangle(data.u8ResultImage, width, objs->left * 2, objs->right * 2, objs->top * 2, objs->bottom * 2, green);
-		}
-		
-		printf("\n");
-	}
-	
-	for (greyRow = 0; greyRow < greyHeight; greyRow += 1)
+	/* Mark areas that are considered part of an object. */
+/*	for (greyRow = 0; greyRow < greyHeight; greyRow += 1)
 	{
 		row = greyRow * 2;
 		for (greyCol = 0; greyCol < greyWidth; greyCol += 1)
@@ -480,13 +495,52 @@ void ProcessFrame(uint8 const * const pRawImg)
 			pos = (row * width + col) * 3;
 			grey = pGrayImg[greyRow * greyWidth + greyCol];
 			
-		/*	if (grey == 0)
+			if (grey == 0)
 			{
 				data.u8ResultImage[pos + 0] = 0;
 				data.u8ResultImage[pos + 1] = 0;
 				data.u8ResultImage[pos + 2] = ~0;
-			} */
+			}
 		}
+	}
+*/	
+	{
+		struct object * objs = findObjects(pGrayImg, greyWidth, greyHeight, 0);
+		
+		for (; objs != NULL; objs = objs->pNext)
+		{
+			if (objs->weight < thresholdWeight)
+				continue;
+			
+			uint8 const green[3] = {0, ~0, 0}, black[3] = {0, 0, 0},
+				white[3] = {~0, ~0, ~0};
+			uint8 color[3];
+			uint8 const * colorBorder;
+			uint8 const size = 8;
+			int16 spotPosX, spotPosY;
+			
+			drawRectangle(data.u8ResultImage, width, objs->left * 2, objs->right * 2, objs->top * 2, objs->bottom * 2, green);
+			
+			spotPosX = objs->posWghtX * 2 / objs->weight - size / 2;
+			spotPosY = objs->posWghtY * 2 / objs->weight - size / 2;
+			
+			if (spotPosX < 0 || spotPosY < 0 || spotPosX + size >= width || spotPosY + size >= height)
+				continue;
+			
+			err = OscVisDebayerSpot(pRawImg, width, height, enBayerOrder, spotPosX, spotPosY, size, color);
+			
+			printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu, color: (%u, %u, %u)\n", objs->left, objs->right, objs->top, objs->bottom, objs->weight, color[0], color[1], color[2]);
+			
+			saturate(color);
+			
+			/* draws a rectangle filled with the color found */
+			fillRectangle(data.u8ResultImage, width, spotPosX, spotPosX + size, spotPosY, spotPosY + size, color);
+			
+			colorBorder = (color[0] + color[1] + color[2]) > (255 * 3 / 2) ? black : white;
+			drawRectangle(data.u8ResultImage, width, spotPosX, spotPosX + size, spotPosY, spotPosY + size, colorBorder);
+		}
+		
+		printf("\n");
 	}
 }
 
