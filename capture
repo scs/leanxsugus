@@ -1,0 +1,66 @@
+#!/bin/sh
+# capture - captures a series of images from the leanxcam over the web interface
+# Michael Schwarz <michael.schwarz@scs.ch>
+
+info() {
+	# something of interest to the user
+	# $1: the message
+
+	echo "Info:" "$1" >&2
+}
+
+warning() {
+	# something that should not happen through normal operation but not interrupting normal operation
+	# $1: the message
+
+	echo "Warning:" "$1" >&2
+}
+
+error() {
+	# something interrupting normal operation
+	# $1: the message
+
+	echo "Error:" "$1" >&2
+}
+
+usage() {
+	cat >&2 << EOF
+Usage:
+    capture [ -c <count> ] [ -o <filename> ]
+
+Options:
+    -c  Captures only the specified amount of pictures.
+    -o  Writes the pictures to files starting with the specified name.
+EOF
+}
+
+COUNT=
+FILENAME=capture
+
+while [ "$1" ]; do
+	if [ "$1" == "-c" ]; then
+		if ! [ "$2" ]; then
+			error "-c needs an argument."
+			exit 1
+		fi
+		
+		COUNT=$2
+		shift 2
+	elif [ "$1" == "-o" ]; then
+		if ! [ "$2" ]; then
+			error "-0 needs an argument."
+			exit 1
+		fi
+		
+		FILENAME=$2
+		shift 2
+	fi
+done
+
+i=0
+while ! [ "$COUNT" ] || [ $i -lt "$COUNT" ]; do
+	i=$[ $i + 1 ]
+	curl -d "DoCaptureColor=true" http://192.168.11.28/cgi-bin/leanxsugus.cgi > /dev/null 2> /dev/null
+	curl http://192.168.11.28/img.bmp > "$FILENAME-$i.bmp" 2> /dev/null
+	echo "$FILENAME-$i.bmp"
+done
