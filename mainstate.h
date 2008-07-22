@@ -8,8 +8,8 @@
 #include "leanxsugus.h"
 
 enum MainStateEvents {
-	FRAMESEQ_EVT,		/* frame ready to process (before setting up next frame capture) */
-	FRAMEPAR_EVT,		/* frame ready to process (parallel to next capture) */
+	FRAMESEQ_EVT, /* frame ready to process (before setting up next frame capture) */
+	FRAMEPAR_EVT, /* frame ready to process (parallel to next capture) */
 	IPC_GET_APP_STATE_EVT, /* Webinterface asks for the current application state. */
 	IPC_GET_COLOR_IMG_EVT, /* Webinterface asks for a color image. */
 	IPC_GET_RAW_IMG_EVT, /* Webinterface asks for a raw image. */
