@@ -1,5 +1,6 @@
 var xmlHttp = null;
 var isIE = false;
+var counter = 0;
 
 function elem(elemIdentString) {
 	return document.getElementById(elemIdentString);
@@ -8,7 +9,7 @@ function elem(elemIdentString) {
 function getHTTPObject() {
 	try {
 		// Firefox, Opera 8.0+, Safari
-		xmlHttp=new XMLHttpRequest();
+		xmlHttp = new XMLHttpRequest();
 		if (xmlHttp.overrideMimeType) {
 			// set type accordingly to anticipated content type
 			xmlHttp.overrideMimeType('text/html');
@@ -18,7 +19,7 @@ function getHTTPObject() {
 		isIE = true;
 		
 		var msxmlhttp = new Array('Msxml2.XMLHTTP.5.0', 'Msxml2.XMLHTTP.4.0', 'Msxml2.XMLHTTP.3.0', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP');
-		for (var i = 0; i < msxmlhttp.length; i++) {
+		for (var i = 0; i < msxmlhttp.length; i += 1) {
 			try {
 				xmlHttp = new ActiveXObject(msxmlhttp[i]);
 			} catch (e) {
@@ -32,7 +33,15 @@ function getHTTPObject() {
 }
 
 function onLoad() {
-	updateData();
+//	updateData();
+	refreshImage();
+}
+
+function refreshImage() {
+	counter += 1;
+	elem("camimage").src = "/image.bmp?" + counter;
+	
+	setTimeout("refreshImage()", 500);
 }
 
 function updateData() {
@@ -67,7 +76,7 @@ function useHttpResponse() {
 			// Depending on the parameter name, invoke a different action.
 			switch (argSplit[0]) {
 			case "imgTS":
-				elem("camimage").src = "/img.bmp?" + argSplit[1];
+				elem("camimage").src = "/image.bmp?" + argSplit[1];
 			/*	if (elem("camimage"))
 					elem("camimage").src = "/img.bmp?" + argSplit[1];
 				else
@@ -80,7 +89,7 @@ function useHttpResponse() {
 				return;
 			}
 			
-			i++;
+			i += 1;
 		}
 		setTimeout("updateData()", 1);
 	}
