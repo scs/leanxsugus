@@ -124,20 +124,22 @@ OSC_ERR Unload()
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 
 void mainLoop () {
-	static uint8 frameBuffer[captureWidth * captureHeight];
-	t_index width = OSC_CAM_MAX_IMAGE_WIDTH, height = OSC_CAM_MAX_IMAGE_HEIGHT;
+	static uint8 frameBuffer[widthCapture * heightCapture];
 	OSC_ERR err = SUCCESS;
+	
+	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - widthCapture) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - heightCapture) / 2, widthCapture, heightCapture);
 	
 	err = OscCamSetFrameBuffer(0, sizeof frameBuffer, frameBuffer, TRUE);
 	if (err != SUCCESS)
 	{
-		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n",
-				__func__);
+		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n", __func__);
 		return;
 	}
 	
 	loop {
-		static uint8 * frameBuffer;
+		static uint8 * pFrameBuffer;
+		
+	//	readConfig();
 		
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
@@ -146,16 +148,14 @@ void mainLoop () {
 			return;
 		}
 		
-	retry:
-		err = OscCamReadPicture(0, &frameBuffer, 0, 0);
+		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to read the picture (%d)!\n", __func__, err);
-			goto retry;
 			return;
 		}
 		
-		processFrame(frameBuffer, width, height);
+		processFrame(pFrameBuffer);
 	}
 }
 
@@ -185,6 +185,7 @@ int main(const int argc, const char ** argv)
 	OscLog(INFO, "Initialization successful!\n");
 	
 	processFrame_init();
+	config_init();
 	
 	mainLoop();
 		

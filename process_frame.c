@@ -10,17 +10,15 @@
 #define IMG_FILENAME "/home/httpd/image.bmp"
 #endif
 
-#define DEBUG
+#define widthGrey (widthCapture / 2)
+#define heightGrey (heightCapture / 2)
 
-#ifdef DEBUG
-	#define printMark() printf("%s: Line %d\n", __func__, __LINE__)
-	#define m printf("%s: Line %d\n", __func__, __LINE__);
-	#define p(name) printf("%s: %ld\n", # name, name);
-#else
-	#define printMark()
-	#define m
-	#define p(name)
-#endif
+struct {
+	enum EnBayerOrder enBayerOrder;
+	uint8 imgColor[3 * widthCapture * heightCapture];
+	/*! @brief Greyscale image with half the with an height */
+	uint8 imgGrey[widthGrey * heightGrey];
+} data;
 
 typedef enum {
 	e_classification_sugusRed,
@@ -134,26 +132,26 @@ void objectPool_move (s_objectPool * const pPool, struct object * const pObj, t_
  * @param maskLower If set, pixels with a value smaller than the threshold are masked with the smalles value (0).
  * @param maskUpper If set, pixels with a value of threshold or greater are masked with the largest value (255).
  */
-void applyThreshold(uint8 * const pImg, uint16 const width, uint16 const height, uint8 const threshold, bool const maskLower, bool const maskUpper) {
+void applyThreshold(uint8 const threshold, bool const maskLower, bool const maskUpper) {
 	uint32 pos;
 	
 	if (maskLower)
 		if (maskUpper)
-			for (pos = 0; pos < width * height; pos += 1)
-				if (pImg[pos] < threshold)
-					pImg[pos] = 0;
+			for (pos = 0; pos < widthGrey * heightGrey; pos += 1)
+				if (data.imgGrey[pos] < threshold)
+					data.imgGrey[pos] = 0;
 				else
-					pImg[pos] = ~0;
+					data.imgGrey[pos] = ~0;
 		else
-			for (pos = 0; pos < width * height; pos += 1)
-				if (pImg[pos] < threshold)
-					pImg[pos] = 0;
+			for (pos = 0; pos < widthGrey * heightGrey; pos += 1)
+				if (data.imgGrey[pos] < threshold)
+					data.imgGrey[pos] = 0;
 				else;
 	else
 		if (maskUpper)
-			for (pos = 0; pos < width * height; pos += 1)
-				if (pImg[pos] >= threshold)
-					pImg[pos] = ~0;
+			for (pos = 0; pos < widthGrey * heightGrey; pos += 1)
+				if (data.imgGrey[pos] >= threshold)
+					data.imgGrey[pos] = ~0;
 }
 
 /*!
@@ -164,7 +162,7 @@ void applyThreshold(uint8 * const pImg, uint16 const width, uint16 const height,
  * @param value The value to be considered part of a segment.
  * @param pSegs A pointer to the segment array.
  */
-void findSegments(uint8 const * const pImg, uint16 const width, uint8 const value, s_segmentArray * const pSegArr)
+void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * const pSegArr)
 {
 	uint16 i = 0;
 	
@@ -172,18 +170,18 @@ void findSegments(uint8 const * const pImg, uint16 const width, uint8 const valu
 		pSegArr->numSegments < length (pSegArr->segments);
 		pSegArr->numSegments += 1)
 	{	
-		while (i < width && pImg[i] != value)
+		while (i < widthGrey && pImg[i] != value)
 			i += 1;
 		pSegArr->segments[pSegArr->numSegments].begin = i;
-		if (i == width)
+		if (i == widthGrey)
 			break;
 		
-		while (i < width && pImg[i] == value)
+		while (i < widthGrey && pImg[i] == value)
 			i += 1;
 		/* we ended a segment, possibly at the end of the line */
 		pSegArr->segments[pSegArr->numSegments].end = i;
 		pSegArr->segments[pSegArr->numSegments].pObject = NULL;
-		if (i == width)
+		if (i == widthGrey)
 		{
 			pSegArr->numSegments += 1;
 			break;
@@ -201,7 +199,7 @@ void findSegments(uint8 const * const pImg, uint16 const width, uint8 const valu
  * @param value The value to be considered part of an object.
  * @return A pointer to the object array.
  */
-struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16 const height, uint8 const value) {
+struct object * findObjects(uint8 const value) {
 	struct object * createObjectForSegment(t_index line, struct segment * pSeg, s_objectPool * pObjPool)
 	{
 		struct object * obj = pObjPool->pFirst[0];
@@ -270,10 +268,9 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 	/* This marks all objects as inactive. */
 	objectPool_init(&objPool);
 	
-//	findSegments(pImg, width, value, segsCurr);
 	segsCurr->numSegments = 0;
 	
-	for (i = 0; i < height; i += 1) /* this loops over every line, starting from the second */
+	for (i = 0; i < heightGrey; i += 1) /* this loops over every line, starting from the second */
 	{ /* both segsLast and segsCurr point to a valid aSegment instance */
 		struct object * obj = NULL; /* This holds the object for the last segment processed. */
 		
@@ -281,7 +278,7 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 		s_segmentArray * segmentsTemp = segsLast;
 		segsLast = segsCurr;
 		segsCurr = segmentsTemp;
-		findSegments(pImg + i * width, width, value, segsCurr);
+		findSegments(data.imgGrey + i * widthGrey, value, segsCurr);
 		
 		iLast = iCurrent = 0;
 		
@@ -350,22 +347,22 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 	return objPool.pFirst[1];
 }
 
-/* void classifyObjects(uint8 const * const pRawImg, uint16 const width, uint16 const height, enum EnBayerOrder const enBayerOrder, struct object const * pObj, uint32 const thresholdWeight, spotSize)
+void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, uint32 const thresholdWeight, t_index const spotSize)
 {
-	findColor(struct object * const pObj)
+	void findColor(struct object * const pObj)
 	{
 		uint8 color[3];
-		uint32 weight = objs->weight;
-		uint16 posX = objs->posWghtX / weight, posY = objs->posWghtY / height;
+		uint32 weight = pObj->weight;
+		uint16 posX = pObj->posWghtX / weight, posY = pObj->posWghtY / weight;
 			
-		objs->posWghtX = posX;
-		objs->posWghtY = posY;
+		pObj->posWghtX = posX;
+		pObj->posWghtY = posY;
 		
-		OscVisDebayerSpot(pRawImg, width, height, enBayerOrder, posX - spotSize / 2, posY - spotSize / 2, spotSize, color);
+		OscVisDebayerSpot(pImgRaw, widthCapture, heightCapture, data.enBayerOrder, 2 * posX - spotSize, 2 * posY - spotSize, spotSize, color);
 		
-		objs->color.red = color[0];
-		objs->color.green = color[1];
-		objs->color.blue = color[2]:
+		pObj->color.red = color[0];
+		pObj->color.green = color[1];
+		pObj->color.blue = color[2];
 	}
 	
 	struct object * obj;
@@ -378,7 +375,7 @@ struct object * findObjects(uint8 const * const pImg, uint16 const width, uint16
 			findColor(obj);
 			obj->classification = e_classification_otherColor;
 		}
-} */
+}
 
 void drawRectangle(uint8 * const pImg, t_index const width, t_index const left, t_index const right, t_index const top, t_index const bottom, uint8 const color[3])
 {
@@ -425,134 +422,124 @@ void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 	}
 }
 
-/* Maximize the saturation of a color. Black remains black. */
-void saturate(uint8 * const color)
+void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pObjs, t_index const spotSize)
 {
-	uint8 const max_component = max(color[0], max(color[1], color[2]));
-	uint8 const min_component = min(color[0], min(color[1], color[2]));
-	uint8 i;
-	
-	if (max_component > 0)
-		for (i = 0; i < 3; i += 1)
-			color[i] = (uint16) (color[i] - min_component) * 255 / (max_component - min_component);
-}
+	/* Maximize the saturation of a color. Black remains black. */
+	void saturate(uint8 * const color)
+	{
+		uint8 const max_component = max(color[0], max(color[1], color[2]));
+		uint8 const min_component = min(color[0], min(color[1], color[2]));
+		uint8 i;
+		
+		if (max_component > 0)
+			for (i = 0; i < 3; i += 1)
+				color[i] = (uint16) (color[i] - min_component) * 255 / (max_component - min_component);
+	}
 
-void processFrame(uint8 const * const pRawImg, t_index width, t_index height)
-{
-	void niceDebugPicture(uint8 const * const pRawImg, t_index const width, t_index const height, uint8 * const pOut) {
-		
-	}
-	void niceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const width, t_index const height, uint8 * const pOut) {
-		
-	}
-	
-	OSC_ERR err;
-	enum EnBayerOrder enBayerOrder;
+	/*! @brief A buffer to hold the resulting color image. */
+	struct object * obj;
 	
 	t_index ix, iy;
-	t_index widthGrey = width / 2, heightGrey = height / 2;
-	t_index widthColor = width, heightColor = height;
 	
-	/*! @brief A buffer to hold the resulting color image. */ 
-	static uint8 pImgColor[3 * captureWidth * captureHeight];
-	/*! @brief Greyscale image with half the with an height */
-	static uint8 pImgGrey[captureWidth * captureHeight / 4];
+	/* Use the framework function to debayer the image. */
+	OscVisDebayer(pRawImg, widthCapture, heightCapture, data.enBayerOrder, data.imgColor);
+	
+	/* Mark areas that are considered part of an object. */
+	for (iy = 0; iy < heightGrey; iy += 1)
+		for (ix = 0; ix < widthGrey; ix += 1)
+		{
+			uint8 grey = data.imgGrey[iy * widthGrey + ix];
+			uint32 pos = (iy * widthCapture + ix) * 6;;
+			
+			if (grey == 0)
+			{
+				data.imgColor[pos + 0] = 0;
+				data.imgColor[pos + 1] = 0;
+				data.imgColor[pos + 2] = ~0;
+			}
+		}
+	
+	for (obj = pObjs; obj != NULL; obj = obj->pNext)
+	{
+		uint8 color[3];
+		uint8 const green[3] = {0, ~0, 0}, black[3] = {0, 0, 0},
+			white[3] = {~0, ~0, ~0};
+		
+		uint8 const * colorBorder;
+		int16 spotPosX, spotPosY;
+		
+		/* Objects that are too small. */
+		if (obj->classification == e_classification_tooSmall)
+			continue;
+		
+		drawRectangle(data.imgColor, widthCapture, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
+		
+		spotPosX = obj->posWghtX * 2;
+		spotPosY = obj->posWghtY * 2;
+		
+		/* The middle square would hang out of the image. */
+		if (spotPosX < 0 || spotPosY < 0 || obj->posWghtX + spotSize >= widthCapture || obj->posWghtX + spotSize >= heightCapture)
+			continue;
+		
+		OscVisDebayerSpot(pRawImg, widthCapture, heightCapture, data.enBayerOrder, spotPosX, spotPosY, spotSize, color);
+		
+		saturate(color);
+		
+		/* draws a rectangle filled with the color found */
+		fillRectangle(data.imgColor, widthCapture, spotPosX - spotSize / 2, spotPosX + spotSize / 2, spotPosY - spotSize / 2, spotPosY + spotSize / 2, color);
+		
+		colorBorder = (color[0] + color[1] + color[2]) > (255 * 3 / 2) ? black : white;
+		drawRectangle(data.imgColor, widthCapture, spotPosX - spotSize / 2, spotPosX + spotSize / 2, spotPosY - spotSize / 2, spotPosY + spotSize / 2, colorBorder);
+	}
+	
+	{
+		struct OSC_PICTURE pic;
+		
+		pic.width = widthCapture;
+		pic.height = heightCapture;
+		pic.type = OSC_PICTURE_RGB_24;
+		pic.data = (void *) data.imgColor;
+		
+		OscBmpWrite(&pic, IMG_FILENAME "~");
+		rename(IMG_FILENAME "~", IMG_FILENAME);
+	}
+}
+
+void writeNiceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const width, t_index const height, uint8 * const pOut) {
+	
+}
+
+void processFrame(uint8 const * const pRawImg)
+{
+	OSC_ERR err;
 	
 	uint8 const thresholdValue = 70;
 	uint8 const thresholdWeight = 50;
 	
-//	int i;
-	
-	err = OscCamGetBayerOrder(&enBayerOrder, 0, 0);
+	err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
 	if(err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Error getting bayer order! (%d)\n", __func__, err);
 		return;
 	}
 	
-	/* Use a framework function to debayer the image. */
-	err = OscVisDebayer(pRawImg, width, height, enBayerOrder, pImgColor);
-	if(err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Error debayering image! (%d)\n", __func__, err);
-		return;
-	}
-	
-	err = OscVisDebayerGreyscaleHalfSize (pRawImg, width, height, enBayerOrder, pImgGrey);
-	if(err != SUCCESS)	
-	{
-		OscLog(ERROR, "%s: Error debayering image! (%d)\n", __func__, err);
-		return;
-	}
+	err = OscVisDebayerGreyscaleHalfSize(pRawImg, widthCapture, heightCapture, data.enBayerOrder, data.imgGrey);
 	
 	/* masks parts of the image that contain an objcet */
-	applyThreshold(pImgGrey, widthGrey, heightGrey, thresholdValue, TRUE, FALSE);
-	
-	/* Mark areas that are considered part of an object. */
-	for (iy = 0; iy < heightGrey; iy += 1)
-		for (ix = 0; ix < widthGrey; ix += 1)
-		{
-			uint8 grey = pImgGrey[iy * widthGrey + ix];
-			uint32 pos = (iy * width + ix) * 6;;
-			
-			if (grey == 0)
-			{
-				pImgColor[pos + 0] = 0;
-				pImgColor[pos + 1] = 0;
-				pImgColor[pos + 2] = ~0;
-			}
-		}
+	applyThreshold(thresholdValue, TRUE, FALSE);
 	
 	{
-		struct object * objs = findObjects(pImgGrey, widthGrey, heightGrey, 0);
+		struct object * objs = findObjects(0), * obj;
 		
-		for (; objs != NULL; objs = objs->pNext)
-		{
-			if (objs->weight < thresholdWeight)
-				continue;
-			
-			uint8 color[3];
-			uint8 const green[3] = {0, ~0, 0}, black[3] = {0, 0, 0},
-				white[3] = {~0, ~0, ~0};
-			
-			uint8 const * colorBorder;
-			uint8 const size = 8;
-			int16 spotPosX, spotPosY;
-			
-			drawRectangle(pImgColor, width, objs->left * 2, objs->right * 2, objs->top * 2, objs->bottom * 2, green);
-			
-			spotPosX = objs->posWghtX * 2 / objs->weight - size / 2;
-			spotPosY = objs->posWghtY * 2 / objs->weight - size / 2;
-			
-			if (spotPosX < 0 || spotPosY < 0 || spotPosX + size >= width || spotPosY + size >= height)
-				continue;
-			
-			err = OscVisDebayerSpot(pRawImg, width, height, enBayerOrder, spotPosX, spotPosY, size, color);
-			
-			printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu, color: (%u, %u, %u)\n", objs->left, objs->right, objs->top, objs->bottom, objs->weight, color[0], color[1], color[2]);
-			
-			saturate(color);
-			
-			/* draws a rectangle filled with the color found */
-			fillRectangle(pImgColor, width, spotPosX, spotPosX + size, spotPosY, spotPosY + size, color);
-			
-			colorBorder = (color[0] + color[1] + color[2]) > (255 * 3 / 2) ? black : white;
-			drawRectangle(pImgColor, width, spotPosX, spotPosX + size, spotPosY, spotPosY + size, colorBorder);
-		}
+		classifyObjects(pRawImg, objs, thresholdWeight, 8);
+		writeNiceDebugPicture(pRawImg, objs, 8);
+		
+		/* Print a line for each found object. */
+		for (obj = objs; obj != NULL; obj = obj->pNext)
+			if (obj->classification != e_classification_tooSmall)
+				printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu, color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 		
 		printf("\n");
-	}
-	
-	{
-		struct OSC_PICTURE pic;
-		
-		pic.width = widthColor;
-		pic.height = heightColor;
-		pic.type = OSC_PICTURE_RGB_24;
-		pic.data = (void *) pImgColor;
-		
-		OscBmpWrite(&pic, IMG_FILENAME "~");
-		rename(IMG_FILENAME "~", IMG_FILENAME);
 	}
 }
 

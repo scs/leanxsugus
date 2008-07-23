@@ -18,8 +18,8 @@
 /*! @brief Gets the length of a field. This does not work for pointers, which are the same as fields. */
 #define length(a) ((sizeof (a)) / sizeof *(a))
 
-#define captureWidth OSC_CAM_MAX_IMAGE_WIDTH
-#define captureHeight OSC_CAM_MAX_IMAGE_HEIGHT
+#define widthCapture OSC_CAM_MAX_IMAGE_WIDTH
+#define heightCapture 272 /* OSC_CAM_MAX_IMAGE_HEIGHT */
 
 typedef uint16 t_index;
 
@@ -32,6 +32,9 @@ typedef uint16 t_index;
 OSC_ERR Unload();
 
 void processFrame_init();
-void processFrame(uint8 const * const pRawImg, t_index width, t_index height);
+void processFrame(uint8 const * const pRawImg);
+
+void readConfig();
+void config_init();
 
 #endif /*LEANXSUGUS_H_*/
