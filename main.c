@@ -2,7 +2,7 @@
  * @file main.c
  * @brief Main file of the template application. Mainly contains initialization code.
  */
-#include "leanxsugus.h"
+#include "main.h"
 #include <string.h>
 #include <sched.h>
 #include <errno.h>
@@ -11,8 +11,7 @@
 
 #define loop while (TRUE)
 
-/*! @brief This stores all variables needed by the algorithm. */
-struct TEMPLATE data;
+void *hFramework;
 
 /*! @brief The framework module dependencies of this application. */
 struct OSC_DEPENDENCY deps[] = {
@@ -33,12 +32,9 @@ struct OSC_DEPENDENCY deps[] = {
 static OSC_ERR init(const int argc, const char * * argv)
 {
 	OSC_ERR err = SUCCESS;
-//	uint8 multiBufferIds[2] = {0, 1};
-	
-	memset(&data, 0, sizeof(struct TEMPLATE));
 	
 	/* Create the framework */
-	err = OscCreate(&data.hFramework);
+	err = OscCreate(&hFramework);
 	if (err != SUCCESS)
 	{
 		fprintf(stderr, "%s: error: Unable to create framework.\n", __func__);
@@ -46,7 +42,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 	}
 	
 	/* Load the framework module dependencies. */
-	err = OscLoadDependencies (data.hFramework, deps, length (deps));
+	err = OscLoadDependencies (hFramework, deps, length (deps));
 	if (err != SUCCESS)
 	{
 		fprintf(stderr, "%s: error: Unable to load dependencies! (%d)\n", __func__, err);
@@ -57,29 +53,32 @@ static OSC_ERR init(const int argc, const char * * argv)
 	srand(OscSupCycGet());
 	
 #if defined(OSC_HOST) || defined(OSC_SIM)
-/*	err = OscFrdCreateConstantReader(&data.hFileNameReader, TEST_IMAGE_FN);
-	if (err != SUCCESS)
 	{
-		OscLog(ERROR, "%s: Unable to create constant file name reader for %s! (%d)\n", __func__, TEST_IMAGE_FN, err);
-		goto frd_err;
-	}
-	
-	err = OscCamSetFileNameReader(data.hFileNameReader);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to set file name reader for camera! (%d)\n", __func__, err);
-		goto frd_err;
-	} */
-	
-	{
-		void * hTestImageReader;
+		void *hFileNameReader;
 		
-		OscFrdCreateFileListReader(&hTestImageReader, "cam-file-list.txt");
-		OscCamSetFileNameReader(hTestImageReader);
+	/*	err = OscFrdCreateConstantReader(&data.hFileNameReader, TEST_IMAGE_FN);
+		if (err != SUCCESS)
+		{
+			OscLog(ERROR, "%s: Unable to create constant file name reader for %s! (%d)\n", __func__, TEST_IMAGE_FN, err);
+			goto frd_err;
+		}
+		
+		err = OscCamSetFileNameReader(data.hFileNameReader);
+		if (err != SUCCESS)
+		{
+			OscLog(ERROR, "%s: Unable to set file name reader for camera! (%d)\n", __func__, err);
+			goto frd_err;
+		} */
+		
+		{
+			void * hTestImageReader;
+			
+			OscFrdCreateFileListReader(&hTestImageReader, "cam-file-list.txt");
+			OscCamSetFileNameReader(hTestImageReader);
+		}
 	}
 #endif /* defined(OSC_HOST) || defined(OSC_SIM) */
 
-#if defined(OSC_HOST)
 	/* Set the camera registers to sane default values. */
 	err = OscCamPresetRegs();
 	if (err != SUCCESS)
@@ -87,60 +86,25 @@ static OSC_ERR init(const int argc, const char * * argv)
 		OscLog(ERROR, "%s: Unable to preset camera registers! (%d)\n", __func__, err);
 		goto fb_err;
 	}
-#endif /* defined(OSC_HOST) */
-	  
-	/* Set up two frame buffers with enough space for the maximum camera resolution in cached memory. */
-	err = OscCamSetFrameBuffer(0, OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT, data.frameBuffer, TRUE);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n",
-				__func__);
-		goto fb_err;
-	}
 	
-	/* Create a double-buffer from the frame buffers initilalized above. */
-/*	err = OscCamCreateMultiBuffer(2, multiBufferIds);
-	if (err != SUCCESS)
 	{
-		OscLog(ERROR, "%s: Unable to set up multi buffer!\n",
-				__func__);
-		goto mb_err;
-	} */
-	
-	/* Register an IPC channel to the CGI for the user interface. */
-	err = OscIpcRegisterChannel(&data.ipc.ipcChan,
-			USER_INTERFACE_SOCKET_PATH,
-			F_IPC_SERVER | F_IPC_NONBLOCKING);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to initialize IPC channel to web"
-				"interface! (%d)\n", __func__, err);
-		goto ipc_err;
+		enum EnOscCamPerspective perspective;
+		err |= PerspectiveCfgStr2Enum("DEFAULT", &perspective);
+		if ( err != SUCCESS)
+		{
+			OscLog(WARN, "%s: No (valid) camera-scene perspective defined in EEPROM or no EEPROM found, use default.\n", __func__);
+		}
+		OscCamSetupPerspective(perspective);
 	}
-		
-	err |= PerspectiveCfgStr2Enum("DEFAULT", &data.perspective);
-	if ( err != SUCCESS)
-	{
-		OscLog(WARN,
-				 "%s: No (valid) camera-scene perspective defined "
-				 "in EEPROM or no EEPROM found, use default.\n",
-				 __func__);
-	}
-	OscCamSetupPerspective( data.perspective);
 	
 	/* Initialieses the object recognition data . */
 	
 	return SUCCESS;
-	   
-ipc_err:
-mb_err:
+	
 fb_err:
-#if defined(OSC_HOST) || defined(OSC_SIM)
-frd_err:
-#endif
-	OscUnloadDependencies(data.hFramework, deps, sizeof(deps)/sizeof(struct OSC_DEPENDENCY));
+	OscUnloadDependencies(hFramework, deps, sizeof(deps)/sizeof(struct OSC_DEPENDENCY));
 dep_err:
-	OscDestroy(&data.hFramework);
+	OscDestroy(&hFramework);
 	
 	return err;
 }
@@ -148,12 +112,12 @@ dep_err:
 OSC_ERR Unload()
 {
 	/* Unload the framework module dependencies */
-	OscUnloadDependencies(data.hFramework,
+	OscUnloadDependencies(hFramework,
 			deps,
 			sizeof(deps)/sizeof(struct OSC_DEPENDENCY));
 	
-	OscDestroy(data.hFramework);
-   
+	OscDestroy(hFramework);
+	
 	return SUCCESS;
 }
 
@@ -163,13 +127,6 @@ void mainLoop () {
 	static uint8 frameBuffer[captureWidth * captureHeight];
 	t_index width = OSC_CAM_MAX_IMAGE_WIDTH, height = OSC_CAM_MAX_IMAGE_HEIGHT;
 	OSC_ERR err = SUCCESS;
-	
-	err = OscCamPresetRegs();
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to preset camera registers! (%d)\n", __func__, err);
-		return;
-	}
 	
 	err = OscCamSetFrameBuffer(0, sizeof frameBuffer, frameBuffer, TRUE);
 	if (err != SUCCESS)
@@ -189,11 +146,12 @@ void mainLoop () {
 			return;
 		}
 		
-	//	err = OscCamReadPicture(&frameBuffer);
+	retry:
 		err = OscCamReadPicture(0, &frameBuffer, 0, 0);
 		if (err != SUCCESS)
 		{
-			OscLog(ERROR, "%s: Unable read the picture (%d)!\n", __func__, err);
+			OscLog(ERROR, "%s: Unable to read the picture (%d)!\n", __func__, err);
+			goto retry;
 			return;
 		}
 		
@@ -208,9 +166,15 @@ void mainLoop () {
  * @param argv Command line argument strings.
  * @return 0 on success
  */
-int main(const int argc, const char * * argv)
+int main(const int argc, const char ** argv)
 {
 	OSC_ERR err = SUCCESS;
+	
+//	OscLogSetConsoleLogLevel(INFO);
+//	OscLogSetFileLogLevel(WARN);
+	
+	OscLogSetConsoleLogLevel(DEBUG);
+	OscLogSetFileLogLevel(DEBUG);
 	
 	err = init(argc, argv);
 	if (err != SUCCESS)
@@ -220,10 +184,8 @@ int main(const int argc, const char * * argv)
 	}
 	OscLog(INFO, "Initialization successful!\n");
 	
-	OscLogSetConsoleLogLevel(INFO);
-	OscLogSetFileLogLevel(WARN);
+	processFrame_init();
 	
-//	StateControl();
 	mainLoop();
 		
 	Unload();

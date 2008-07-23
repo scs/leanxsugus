@@ -34,7 +34,7 @@ TARGETSIM_CFLAGS = -Wall $(PEDANTIC) -O2 -DOSC_TARGET -DOSC_SIM
 TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576" -lbfdsp
 
 # Source files of the application
-SOURCES = main.c debug.c mainstate.c ipc.c process_frame.c
+SOURCES = main.c process_frame.c config.c
 
 # Default target
 all : $(OUT)

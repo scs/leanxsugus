@@ -15,7 +15,7 @@ TARGETDBG_CFLAGS = -Wall -pedantic -ggdb3 -DOSC_TARGET
 TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576"
 
 # Source files of the application
-SOURCES = cgi.c
+SOURCES =
 
 # Files served by the web server
 WEB_FILES = www/*
@@ -27,31 +27,14 @@ $(OUT): target host
 
 # Compiles the executable
 target: $(SOURCES) ../inc/*.h ../lib/libosc_target.a $(WEB_FILES)
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) ../lib/libosc_target.a $(TARGET_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@echo "Target CGI done."
-#	cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
-	@mkdir -p www/cgi-bin
-	@cp $(OUT)$(TARGET_SUFFIX) www/cgi-bin/$(OUT)
-	@tar cfz www.tar.gz -C www .
-#	@cp www.tar.gz /tftpboot
-	
-targetdbg: $(SOURCES) ../inc/*.h ../lib/libosc_target.a $(WEB_FILES)
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) ../lib/libosc_target.a $(TARGETDBG_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@echo "Target CGI done."
-	@mkdir -p www/cgi-bin
-	@cp $(OUT)$(TARGET_SUFFIX) www/cgi-bin/$(OUT)
-	@tar cfz www.tar.gz -C www .
+	@ tar -c -C www . | gzip > www.tar.gz
 	
 host: $(SOURCES) ../inc/*.h ../lib/libosc_host.a  $(WEB_FILES)
-	@echo "Compiling for host.."
-	$(HOST_CC) $(SOURCES) ../lib/libosc_host.a $(HOST_CFLAGS) \
-	$(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
-	@echo "Host executable done."
-	@cp $(OUT)$(HOST_SUFFIX) $(OUT)
+#	@echo "Compiling for host.."
+#	$(HOST_CC) $(SOURCES) ../lib/libosc_host.a $(HOST_CFLAGS) \
+#	$(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
+#	@echo "Host executable done."
+#	@cp $(OUT)$(HOST_SUFFIX) $(OUT)
 	@cp $(OUT) www/cgi-bin
 #	cp www/cgi-bin/* /var/www/cgi-bin/
 #	@chmod a+x /var/www/cgi-bin/$(OUT)

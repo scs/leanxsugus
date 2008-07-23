@@ -2,8 +2,7 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include "leanxsugus.h"
-// #include "framework_extensions.h"
+#include "main.h"
 
 #if defined(OSC_HOST)
 #define IMG_FILENAME "/var/www/image.bmp"
