@@ -13,6 +13,9 @@
 #define widthGrey (widthCapture / 2)
 #define heightGrey (heightCapture / 2)
 
+#define m printf("%s: Line %d\n", __func__, __LINE__);
+//#define m
+
 struct {
 	enum EnBayerOrder enBayerOrder;
 	uint8 imgColor[3 * widthCapture * heightCapture];
@@ -26,7 +29,8 @@ typedef enum {
 	e_classification_sugusOrange,
 	e_classification_sugusYellow,
 	e_classification_otherColor,
-	e_classification_tooSmall
+	e_classification_tooSmall,
+	e_classification_tooNearToBorder
 } e_classification;
 
 typedef struct {
@@ -224,8 +228,6 @@ struct object * findObjects(uint8 const value) {
 	/* Merges two objects and re-labels the segments given. */
 	struct object * mergeObjects(struct object * pObj1, struct object * pObj2, s_objectPool * pObjPool, s_segmentArray * pSegArr1, s_segmentArray * pSegArr2)
 	{
-	//	printf("obj1: %u, obj2: %u\n", pObj1 - objectPool.objects, pObj2 - objectPool.objects);
-		
 		if (pObj1 == NULL)
 			return pObj2;
 		else if (pObj2 == NULL)
@@ -349,64 +351,74 @@ struct object * findObjects(uint8 const value) {
 
 void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, uint32 const thresholdWeight, t_index const spotSize)
 {
-	void findColor(struct object * const pObj)
-	{
-		uint8 color[3];
-		uint32 weight = pObj->weight;
-		uint16 posX = pObj->posWghtX / weight, posY = pObj->posWghtY / weight;
-			
-		pObj->posWghtX = posX;
-		pObj->posWghtY = posY;
-		
-		OscVisDebayerSpot(pImgRaw, widthCapture, heightCapture, data.enBayerOrder, 2 * posX - spotSize, 2 * posY - spotSize, spotSize, color);
-		
-		pObj->color.red = color[0];
-		pObj->color.green = color[1];
-		pObj->color.blue = color[2];
-	}
-	
 	struct object * obj;
 	
-	for (obj = pObj; obj != NULL; obj = obj->pNext)	
+	for (obj = pObj; obj != NULL; obj = obj->pNext)
+	{
+		obj->posWghtX /= obj->weight;
+		obj->posWghtY /= obj->weight;
+		
 		if (obj->weight < thresholdWeight)
 			obj->classification = e_classification_tooSmall;
 		else
 		{
-			findColor(obj);
+			int16 posX, posY;
+			uint8 color[3];
+			
+			posX = 2 * obj->posWghtX - spotSize / 2;
+			posY = 2 * obj->posWghtY - spotSize / 2;
+			
+			/* Move the spot inside the picture. */
+			if (posX < 0)
+				posX = 0;
+			if (posY < 0)
+				posY = 0;
+			if (posX + spotSize >= widthCapture)
+				posX = widthCapture - spotSize;
+			if (posY + spotSize >= heightCapture)
+				posY = heightCapture - spotSize;
+			
+			OscVisDebayerSpot(pImgRaw, widthCapture, heightCapture, data.enBayerOrder, posX, posY, spotSize, color);
+			
+			obj->color.red = color[0];
+			obj->color.green = color[1];
+			obj->color.blue = color[2];
+		
 			obj->classification = e_classification_otherColor;
 		}
+	}
 }
 
-void drawRectangle(uint8 * const pImg, t_index const width, t_index const left, t_index const right, t_index const top, t_index const bottom, uint8 const color[3])
+void drawRectangle(uint8 * const pImg, t_index const width, t_index const left, t_index const right, t_index const top, t_index const bottom, s_color const color)
 {
 	uint16 i;
 	
 	/* Draw the horizontal lines. */
 	for (i = left; i < right; i += 1)
 	{
-		pImg[(width * top + i) * 3] = color[0];
-		pImg[(width * top + i) * 3 + 1] = color[1];
-		pImg[(width * top + i) * 3 + 2] = color[2];
+		pImg[(width * top + i) * 3] = color.red;
+		pImg[(width * top + i) * 3 + 1] = color.green;
+		pImg[(width * top + i) * 3 + 2] = color.blue;
 		
-		pImg[(width * (bottom - 1) + i) * 3] = color[0];
-		pImg[(width * (bottom - 1) + i) * 3 + 1] = color[1];
-		pImg[(width * (bottom - 1) + i) * 3 + 2] = color[2];
+		pImg[(width * (bottom - 1) + i) * 3] = color.red;
+		pImg[(width * (bottom - 1) + i) * 3 + 1] = color.green;
+		pImg[(width * (bottom - 1) + i) * 3 + 2] = color.blue;
 	}
 	
 	/* Draw the vertical lines. */
 	for (i = top; i < bottom; i += 1)
 	{
-		pImg[(width * i + left) * 3] = color[0];
-		pImg[(width * i + left) * 3 + 1] = color[1];
-		pImg[(width * i + left) * 3 + 2] = color[2];
+		pImg[(width * i + left) * 3] = color.red;
+		pImg[(width * i + left) * 3 + 1] = color.green;
+		pImg[(width * i + left) * 3 + 2] = color.blue;
 		
-		pImg[(width * i + right - 1) * 3] = color[0];
-		pImg[(width * i + right - 1) * 3 + 1] = color[1];
-		pImg[(width * i + right - 1) * 3 + 2] = color[2];
+		pImg[(width * i + right - 1) * 3] = color.red;
+		pImg[(width * i + right - 1) * 3 + 1] = color.green;
+		pImg[(width * i + right - 1) * 3 + 2] = color.blue;
 	}
 }
 
-void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, t_index const right, t_index const top, t_index const bottom, uint8 const color[3])
+void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, t_index const right, t_index const top, t_index const bottom, s_color const color)
 {
 	uint16 ix, iy;
 	
@@ -415,9 +427,9 @@ void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 	{
 		for (ix = left; ix < right; ix += 1)
 		{
-			pImg[(width * iy + ix) * 3] = color[0];
-			pImg[(width * iy + ix) * 3 + 1] = color[1];
-			pImg[(width * iy + ix) * 3 + 2] = color[2];
+			pImg[(width * iy + ix) * 3] = color.red;
+			pImg[(width * iy + ix) * 3 + 1] = color.green;
+			pImg[(width * iy + ix) * 3 + 2] = color.blue;
 		}
 	}
 }
@@ -425,71 +437,84 @@ void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pObjs, t_index const spotSize)
 {
 	/* Maximize the saturation of a color. Black remains black. */
-	void saturate(uint8 * const color)
+	s_color saturate(s_color const color)
 	{
-		uint8 const max_component = max(color[0], max(color[1], color[2]));
-		uint8 const min_component = min(color[0], min(color[1], color[2]));
-		uint8 i;
+		uint8 const maxComp = max(color.red, max(color.green, color.blue));
+		uint8 const minComp = min(color.red, min(color.green, color.blue));
+		s_color colRet;
 		
-		if (max_component > 0)
-			for (i = 0; i < 3; i += 1)
-				color[i] = (uint16) (color[i] - min_component) * 255 / (max_component - min_component);
+		colRet.red = (uint16) (color.red - minComp) * 255 / (maxComp - minComp);
+		colRet.green = (uint16) (color.green - minComp) * 255 / (maxComp - minComp);
+		colRet.blue = (uint16) (color.blue - minComp) * 255 / (maxComp - minComp);
+		
+		return colRet;
 	}
 
 	/*! @brief A buffer to hold the resulting color image. */
 	struct object * obj;
-	
 	t_index ix, iy;
+	bool const markAreas = FALSE;
 	
 	/* Use the framework function to debayer the image. */
 	OscVisDebayer(pRawImg, widthCapture, heightCapture, data.enBayerOrder, data.imgColor);
 	
 	/* Mark areas that are considered part of an object. */
-	for (iy = 0; iy < heightGrey; iy += 1)
-		for (ix = 0; ix < widthGrey; ix += 1)
-		{
-			uint8 grey = data.imgGrey[iy * widthGrey + ix];
-			uint32 pos = (iy * widthCapture + ix) * 6;;
-			
-			if (grey == 0)
+	if (markAreas)
+		for (iy = 0; iy < heightGrey; iy += 1)
+			for (ix = 0; ix < widthGrey; ix += 1)
 			{
-				data.imgColor[pos + 0] = 0;
-				data.imgColor[pos + 1] = 0;
-				data.imgColor[pos + 2] = ~0;
+				uint8 const grey = data.imgGrey[iy * widthGrey + ix];
+				uint32 const pos = (iy * widthCapture + ix) * 6;;
+				
+				if (grey == 0)
+				{
+					data.imgColor[pos + 0] = 0;
+					data.imgColor[pos + 1] = 0;
+					data.imgColor[pos + 2] = ~0;
+				}
 			}
-		}
 	
 	for (obj = pObjs; obj != NULL; obj = obj->pNext)
 	{
-		uint8 color[3];
-		uint8 const green[3] = {0, ~0, 0}, black[3] = {0, 0, 0},
-			white[3] = {~0, ~0, ~0};
-		
-		uint8 const * colorBorder;
-		int16 spotPosX, spotPosY;
+		s_color const green = { 0, ~0, 0 }, black = { 0, 0, 0 },
+			white = { ~0, ~0, ~0 };
 		
 		/* Objects that are too small. */
 		if (obj->classification == e_classification_tooSmall)
 			continue;
 		
-		drawRectangle(data.imgColor, widthCapture, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
-		
-		spotPosX = obj->posWghtX * 2;
-		spotPosY = obj->posWghtY * 2;
-		
-		/* The middle square would hang out of the image. */
-		if (spotPosX < 0 || spotPosY < 0 || obj->posWghtX + spotSize >= widthCapture || obj->posWghtX + spotSize >= heightCapture)
+		/* Objects that are too near to the border. */
+		if (obj->classification == e_classification_tooNearToBorder)
 			continue;
 		
-		OscVisDebayerSpot(pRawImg, widthCapture, heightCapture, data.enBayerOrder, spotPosX, spotPosY, spotSize, color);
+		drawRectangle(data.imgColor, widthCapture, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
 		
-		saturate(color);
-		
-		/* draws a rectangle filled with the color found */
-		fillRectangle(data.imgColor, widthCapture, spotPosX - spotSize / 2, spotPosX + spotSize / 2, spotPosY - spotSize / 2, spotPosY + spotSize / 2, color);
-		
-		colorBorder = (color[0] + color[1] + color[2]) > (255 * 3 / 2) ? black : white;
-		drawRectangle(data.imgColor, widthCapture, spotPosX - spotSize / 2, spotPosX + spotSize / 2, spotPosY - spotSize / 2, spotPosY + spotSize / 2, colorBorder);
+		{
+			s_color const color = obj->color;
+			s_color colorFill, colorBorder;
+			int16 spotPosX, spotPosY;
+			
+		//	colorFill = saturate(color);
+			colorFill = color;
+			colorBorder = (color.red + color.green + color.blue) > (255 * 3 / 2) ? black : white;
+			
+			spotPosX = obj->posWghtX * 2 - spotSize / 2;
+			spotPosY = obj->posWghtY * 2 - spotSize / 2;
+			
+			/* Move the rectangle inside the picture. */
+			if (spotPosX < 0)
+				spotPosX = 0;
+			if (spotPosY < 0)
+				spotPosY = 0;
+			if (spotPosX + spotSize >= widthCapture)
+				spotPosX = widthCapture - spotSize;
+			if (spotPosY + spotSize >= heightCapture)
+				spotPosY = heightCapture - spotSize;
+			
+			/* draws a rectangle filled with the color found */
+			fillRectangle(data.imgColor, widthCapture, spotPosX, spotPosX + spotSize, spotPosY, spotPosY + spotSize, colorFill);
+			drawRectangle(data.imgColor, widthCapture, spotPosX, spotPosX + spotSize, spotPosY, spotPosY + spotSize, colorBorder);
+		}
 	}
 	
 	{
@@ -513,7 +538,7 @@ void processFrame(uint8 const * const pRawImg)
 {
 	OSC_ERR err;
 	
-	uint8 const thresholdValue = 70;
+	uint8 const thresholdValue = 120;
 	uint8 const thresholdWeight = 50;
 	
 	err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
