@@ -117,9 +117,6 @@ OSC_ERR Unload()
 uint8 frameBuffers[2][OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
 
 OSC_ERR mainLoop () {
-//	static uint8 frameBuffers[2][widthCapture * heightCapture];
-	
-	uint8 multiBufferIds[] = { 0, 1 };
 	OSC_ERR err = SUCCESS;
 	
 	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - widthCapture) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - heightCapture) / 2, widthCapture, heightCapture);
@@ -136,45 +133,19 @@ OSC_ERR mainLoop () {
 		return err;
 	}
 	
-	err = OscCamSetFrameBuffer(1, sizeof frameBuffers[1], frameBuffers[1], TRUE);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n", __func__);
-		return err;
-	}
-	
-	/* Create a double-buffer from the frame buffers initilalized above.*/
-    err = OscCamCreateMultiBuffer(2, multiBufferIds);
-    if(err != SUCCESS)
-    {
-        OscLog(ERROR, "%s: Unable to set up multi buffer!\n",
-                __func__);
-       return err;
-    }
-		
-	err = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER, OSC_CAM_TRIGGER_MODE_MANUAL);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to trigger initial capture (%d)!\n", __func__, err);
-		return err;
-	}
-	
-	/* Wait for the camera module to realize that it should initiate a picture. */
-	usleep(100 * 1000);
-	
 	loop {
 		static uint8 * pFrameBuffer;
 		
 	//	readConfig();
 		
-		err = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER, OSC_CAM_TRIGGER_MODE_MANUAL);
+		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to trigger initial capture (%d)!\n", __func__, err);
 			return err;
 		}
 		
-		err = OscCamReadLatestPicture(&pFrameBuffer);
+		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to read the picture (%d)!\n", __func__, err);
