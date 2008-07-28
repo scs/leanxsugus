@@ -15,6 +15,8 @@
 #define max(a,b) ((a) > (b) ? (a) : (b))
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
+#define loop while (TRUE)
+
 /*! @brief Gets the length of a field. This does not work for pointers, which are the same as fields. */
 #define length(a) ((sizeof (a)) / sizeof *(a))
 

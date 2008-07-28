@@ -2,14 +2,13 @@
  * @file main.c
  * @brief Main file of the template application. Mainly contains initialization code.
  */
+
 #include "main.h"
 #include <string.h>
 #include <sched.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
-
-#define loop while (TRUE)
 
 void *hFramework;
 
@@ -87,15 +86,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 		goto fb_err;
 	}
 	
-	{
-		enum EnOscCamPerspective perspective;
-		err |= PerspectiveCfgStr2Enum("DEFAULT", &perspective);
-		if ( err != SUCCESS)
-		{
-			OscLog(WARN, "%s: No (valid) camera-scene perspective defined in EEPROM or no EEPROM found, use default.\n", __func__);
-		}
-		OscCamSetupPerspective(perspective);
-	}
+//	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_180DEG_ROTATE);
 	
 	/* Initialieses the object recognition data . */
 	

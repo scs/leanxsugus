@@ -551,10 +551,10 @@ void processFrame(uint8 const * const pRawImg)
 	err = OscVisDebayerGreyscaleHalfSize(pRawImg, widthCapture, heightCapture, data.enBayerOrder, data.imgGrey);
 	
 	/* masks parts of the image that contain an objcet */
-	applyThreshold(thresholdValue, TRUE, FALSE);
+	applyThreshold(thresholdValue, FALSE, TRUE);
 	
 	{
-		struct object * objs = findObjects(0), * obj;
+		struct object * objs = findObjects(~0), * obj;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		writeNiceDebugPicture(pRawImg, objs, 8);
