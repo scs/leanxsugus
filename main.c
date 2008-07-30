@@ -13,6 +13,7 @@
 #include "process.h"
 #include "config.h"
 #include "modbus.h"
+#include "valves.h"
 #include "main.h"
 
 #define TEST_IMAGE_FN "test.bmp"
@@ -99,6 +100,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 	/* Initialieses the object recognition data . */
 	process_init();
 	config_init();
+	valves_init();
 	modbus_init();
 	
 	return SUCCESS;
@@ -153,20 +155,21 @@ OSC_ERR mainLoop () {
 	
 	loop {
 		uint8 * pFrameBuffer;
+		t_time capture_time;
 		
-	//	config_read();
-		
-		uint32 cyc = OscSupCycGet();
+		valves_handleValves();
 		
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
 		{
-			OscLog(ERROR, "%s: Unable to trigger initial capture (%d)!\n", __func__, err);
+			OscLog(ERROR, "%s: Unable to trigger the capture (%d)!\n", __func__, err);
 			return err;
 		}
+		capture_time = OscSupCycGet();
 		
-	//	printf("OscCamSetupCapture: %lu us\n", OscSupCycToMicroSecs(OscSupCycGet() - cyc));
-		cyc = OscSupCycGet();
+		config_read();
+		
+		valves_handleValves();
 		
 		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)
@@ -175,9 +178,9 @@ OSC_ERR mainLoop () {
 			return err;
 		}
 		
-	//	printf("OscCamReadPicture = %lu us\n", OscSupCycToMicroSecs(OscSupCycGet() - cyc));
+		valves_handleValves();
 		
-		process(pFrameBuffer);
+		process(pFrameBuffer, capture_time);
 	}
 	
 	return SUCCESS;

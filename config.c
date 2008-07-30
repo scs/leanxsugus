@@ -19,11 +19,11 @@ struct {
 
 sig_atomic_t flag_readConfig;
 
-void schedule_readConfig(int dummy) {
+void scheduleRead(int dummy) {
 	flag_readConfig = true;
 }
 
-void readConfig() {
+void config_read() {
 	if (flag_readConfig)
 	{
 		FILE * pFile = fopen(CONFIG_FILENAME, "r");
@@ -76,5 +76,5 @@ void readConfig() {
 
 void config_init() {
 	flag_readConfig = true;
-	signal (SIGHUP, &schedule_readConfig);
+	signal (SIGHUP, &scheduleRead);
 }

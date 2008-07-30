@@ -9,7 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "support.h"
 #include "modbus.h"
 
 #define BAUDRATE B115200

@@ -2,7 +2,7 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include "modbus.h"
+#include "valves.h"
 #include "process.h"
 
 #if defined(OSC_HOST)
@@ -604,7 +604,30 @@ void writeNiceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const wi
 	
 }
 
-void process(uint8 const * const pRawImg)
+/* Adjusts the valves so they fire when the object is in front of them. */
+void insertToValves(struct object * pObj, t_time capture_time)
+{
+	/* gives the time needed from the conveyor belt to the position. */
+	inline t_time posToTime(uint16 const pos)
+	{
+		return (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) * pos / HEIGHT_CAPTURE + TIME_TO_TOP_OF_PICTURE;
+	}
+	
+	/* Gives the valve responsible for something at the position. */
+	inline t_index posToValve(uint16 const pos)
+	{
+		return (pos - PIXEL_BEGIN_FIRST_VALVE) * 16 / (PIXEL_END_LAST_VALVE - PIXEL_BEGIN_FIRST_VALVE);
+	}
+	
+	t_time const time_top = TIME_TO_VALVES - posToTime(pObj->top);
+	t_time const time_bottom = TIME_TO_VALVES - posToTime(pObj->bottom);
+	t_index const valve_begin = max(0, posToValve(pObj->left));
+	t_index const valve_end = min(15, posToValve(pObj->right));
+	
+	valves_insertEvent(time_top, time_bottom, valve_begin, valve_end);
+}
+
+void process(uint8 const * const pRawImg, t_time capture_time)
 {
 	OSC_ERR err;
 	
@@ -625,10 +648,9 @@ void process(uint8 const * const pRawImg)
 	
 	{
 		struct object * objs = findObjects(~0), * obj;
-		uint16 valves = 0;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
-		writeNiceDebugPicture(pRawImg, objs, 8);
+	//	writeNiceDebugPicture(pRawImg, objs, 8);
 		
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
@@ -645,13 +667,9 @@ void process(uint8 const * const pRawImg)
 					printf("-> yellow\n");
 				else if (obj->classification == e_classification_sugusGreen)
 					printf("-> green\n");
+				
+				insertToValves(obj, capture_time);
 			}
-		
-		for (obj = objs; obj != NULL; obj = obj->pNext)
-			if (obj->classification != e_classification_tooSmall)
-				valves = valves << 1 | 0x0001;
-		
-		modbus_sendMessage(valves);
 		
 		printf("\n");
 	}
