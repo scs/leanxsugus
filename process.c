@@ -11,17 +11,27 @@
 #define IMG_FILENAME "/home/httpd/image.bmp"
 #endif
 
-#define widthGrey (WIDTH_CAPTURE / 2)
-#define heightGrey (HEIGHT_CAPTURE / 2)
+#define WIDTH_GREY (WIDTH_CAPTURE / 2)
+#define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
+
+//#define BENCHMARK_ON
+
+#ifdef BENCHMARK_ON
+uint32 benchmark_cyc;
+	#define benchmark_init benchmark_cyc = OscSupCycGet()
+	#define benchmark_delta { t_time cyc = OscSupCycGet(); printf("Line %d: %lu us\n", __LINE__, OscSupCycToMicroSecs(cyc - benchmark_cyc)); benchmark_cyc = cyc; }
+#else /* BENCHMARK_ON */
+	#define benchmark_init
+	#define benchmark_delta
+#endif /* BENCHMARK_ON */
 
 #define m printf("%s: Line %d\n", __func__, __LINE__);
-//#define m
 
 struct {
 	enum EnBayerOrder enBayerOrder;
 	uint8 imgColor[3 * WIDTH_CAPTURE * HEIGHT_CAPTURE];
 	/*! @brief Greyscale image with half the with an height */
-	uint8 imgGrey[widthGrey * heightGrey];
+	uint8 imgGrey[WIDTH_GREY * HEIGHT_GREY];
 } data;
 
 typedef enum {
@@ -142,19 +152,19 @@ void applyThreshold(uint8 const threshold, bool const maskLower, bool const mask
 	
 	if (maskLower)
 		if (maskUpper)
-			for (pos = 0; pos < widthGrey * heightGrey; pos += 1)
+			for (pos = 0; pos < WIDTH_GREY * HEIGHT_GREY; pos += 1)
 				if (data.imgGrey[pos] < threshold)
 					data.imgGrey[pos] = 0;
 				else
 					data.imgGrey[pos] = ~0;
 		else
-			for (pos = 0; pos < widthGrey * heightGrey; pos += 1)
+			for (pos = 0; pos < WIDTH_GREY * HEIGHT_GREY; pos += 1)
 				if (data.imgGrey[pos] < threshold)
 					data.imgGrey[pos] = 0;
 				else;
 	else
 		if (maskUpper)
-			for (pos = 0; pos < widthGrey * heightGrey; pos += 1)
+			for (pos = 0; pos < WIDTH_GREY * HEIGHT_GREY; pos += 1)
 				if (data.imgGrey[pos] >= threshold)
 					data.imgGrey[pos] = ~0;
 }
@@ -175,18 +185,18 @@ void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * 
 		pSegArr->numSegments < length (pSegArr->segments);
 		pSegArr->numSegments += 1)
 	{	
-		while (i < widthGrey && pImg[i] != value)
+		while (i < WIDTH_GREY && pImg[i] != value)
 			i += 1;
 		pSegArr->segments[pSegArr->numSegments].begin = i;
-		if (i == widthGrey)
+		if (i == WIDTH_GREY)
 			break;
 		
-		while (i < widthGrey && pImg[i] == value)
+		while (i < WIDTH_GREY && pImg[i] == value)
 			i += 1;
 		/* we ended a segment, possibly at the end of the line */
 		pSegArr->segments[pSegArr->numSegments].end = i;
 		pSegArr->segments[pSegArr->numSegments].pObject = NULL;
-		if (i == widthGrey)
+		if (i == WIDTH_GREY)
 		{
 			pSegArr->numSegments += 1;
 			break;
@@ -273,7 +283,7 @@ struct object * findObjects(uint8 const value) {
 	
 	segsCurr->numSegments = 0;
 	
-	for (i = 0; i < heightGrey; i += 1) /* this loops over every line, starting from the second */
+	for (i = 0; i < HEIGHT_GREY; i += 1) /* this loops over every line, starting from the second */
 	{ /* both segsLast and segsCurr point to a valid aSegment instance */
 		struct object * obj = NULL; /* This holds the object for the last segment processed. */
 		
@@ -281,7 +291,7 @@ struct object * findObjects(uint8 const value) {
 		s_segmentArray * segmentsTemp = segsLast;
 		segsLast = segsCurr;
 		segsCurr = segmentsTemp;
-		findSegments(data.imgGrey + i * widthGrey, value, segsCurr);
+		findSegments(data.imgGrey + i * WIDTH_GREY, value, segsCurr);
 		
 		iLast = iCurrent = 0;
 		
@@ -525,10 +535,10 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	
 	/* Mark areas that are considered part of an object. */
 	if (markAreas)
-		for (iy = 0; iy < heightGrey; iy += 1)
-			for (ix = 0; ix < widthGrey; ix += 1)
+		for (iy = 0; iy < HEIGHT_GREY; iy += 1)
+			for (ix = 0; ix < WIDTH_GREY; ix += 1)
 			{
-				uint8 const grey = data.imgGrey[iy * widthGrey + ix];
+				uint8 const grey = data.imgGrey[iy * WIDTH_GREY + ix];
 				uint32 const pos = (iy * WIDTH_CAPTURE + ix) * 6;;
 				
 				if (grey == 0)
@@ -605,12 +615,12 @@ void writeNiceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const wi
 }
 
 /* Adjusts the valves so they fire when the object is in front of them. */
-void insertToValves(struct object * pObj, t_time capture_time)
+void insertIntoValves(struct object * pObj, t_time capture_time)
 {
 	/* gives the time needed from the conveyor belt to the position. */
 	inline t_time posToTime(uint16 const pos)
 	{
-		return (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) * pos / HEIGHT_CAPTURE + TIME_TO_TOP_OF_PICTURE;
+		return (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) * pos / HEIGHT_GREY + TIME_TO_TOP_OF_PICTURE;
 	}
 	
 	/* Gives the valve responsible for something at the position. */
@@ -624,7 +634,14 @@ void insertToValves(struct object * pObj, t_time capture_time)
 	t_index const valve_begin = max(0, posToValve(pObj->left));
 	t_index const valve_end = min(15, posToValve(pObj->right));
 	
-	valves_insertEvent(time_top, time_bottom, valve_begin, valve_end);
+	if (time_bottom > time_top)
+	{
+		printf("Top: %d, Bottom: %d\n", pObj->top, pObj->bottom);
+		printf("Top: %d, Bottom: %d\n", posToTime(pObj->top), posToTime(pObj->bottom));
+		printf("Top: %d, Bottom: %d\n", time_top, time_bottom);
+	}
+	
+	valves_insertEvent(capture_time + time_bottom, capture_time + time_top, valve_begin, valve_end);
 }
 
 void process(uint8 const * const pRawImg, t_time capture_time)
@@ -634,6 +651,8 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 	uint8 const thresholdValue = 50;
 	uint32 const thresholdWeight = 500;
 	
+benchmark_init;
+	
 	err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
 	if(err != SUCCESS)
 	{
@@ -642,16 +661,24 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 	}
 	
 	err = OscVisDebayerGreyscaleHalfSize(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgGrey);
-	
+
+benchmark_delta;
+
 	/* masks parts of the image that contain an objcet */
 	applyThreshold(thresholdValue, FALSE, TRUE);
 	
+	valves_handleValves();
+
+benchmark_delta;
+
 	{
 		struct object * objs = findObjects(~0), * obj;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 	//	writeNiceDebugPicture(pRawImg, objs, 8);
-		
+	
+	benchmark_delta;	
+	
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
 			if (obj->classification != e_classification_tooSmall)
@@ -668,9 +695,11 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 				else if (obj->classification == e_classification_sugusGreen)
 					printf("-> green\n");
 				
-				insertToValves(obj, capture_time);
+				insertIntoValves(obj, capture_time);
 			}
-		
+			
+	benchmark_delta;
+	
 		printf("\n");
 	}
 }

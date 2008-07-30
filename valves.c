@@ -7,13 +7,14 @@
 #include "valves.h"
 #include "modbus.h"
 
-#define assert(a) if (!(a)) printf("%s: %s: %d: Assertion failed: %s", __FILE__, __func__, __LINE__, #a)
-
-#define CPU_FREQ 500000000
+#define assert(a) if (!(a)) printf("%s: %s: Line %d: Assertion failed: %s\n", __FILE__, __func__, __LINE__, #a)
 
 /* This sets to handle the valves a hundred times per second. */
-#define INTERVAL (CPU_FREQ / 50)
+#define INTERVAL (CPU_FREQ / 100)
+/* This defines how many time steps ahead we can set a valve state */
 #define VALUES_AHEAD 10
+
+#define m printf("%s: Line %d\n", __func__, __LINE__);
 
 struct {
 	/* Time the values values[nex_values] should be written to the modbus interface. */
@@ -34,8 +35,11 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	assert (last_valve < 16);
 	
 	for (i = ahead_begin; i < ahead_end; i += 1)
-		for (j = first_valve; j <= last_valve; i += 1)
+		for (j = first_valve; j <= last_valve; j += 1)
+		{
+		//	printf("%d, %d\n", i, j);
 			valves.values[(valves.next_values + i) % VALUES_AHEAD][j] = true;
+		}
 }
 
 /* This blocks until the time to handle the valves has arrived and then sends the next packet over the modbus interface. */
@@ -49,13 +53,19 @@ void valves_handleValves() {
 	else
 		printf("Behind by %lu ms!\n", OscSupCycToMicroSecs(-sleep_time) / 1000);
 	
-	for (i = 0; i < 16; i += 1)
-		if (valves.values[valves.next_values][i])
-			valves_out = (valves_out << 1) & 0x0001;
+//	printf("-> %d\n", valves.next_values);
 	
+	for (i = 0; i < 16; i += 1)
+	{
+		if (valves.values[valves.next_values][i])
+			valves_out |= 0x0001;
+		valves_out <<= 1;
+		valves.values[valves.next_values][i] = false;
+	}
+		
 	modbus_sendMessage(valves_out);
 	
-	valves.next_values = (valves.next_time + 1) % INTERVAL;
+	valves.next_values = (valves.next_values + 1) % VALUES_AHEAD;
 	valves.next_time += INTERVAL;
 }
 

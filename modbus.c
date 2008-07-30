@@ -100,5 +100,5 @@ void modbus_sendMessage(uint16 const valves)
 	
 	write(modbus.fd, modbus.message, MESSAGE_LENGTH + 2);
 	
-	printf("Sent data: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x.\n", modbus.message[0], modbus.message[1], modbus.message[2], modbus.message[3], modbus.message[4], modbus.message[5], modbus.message[6], modbus.message[7], modbus.message[8], modbus.message[9], modbus.message[10]);
+//	printf("Sent data: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x.\n", modbus.message[0], modbus.message[1], modbus.message[2], modbus.message[3], modbus.message[4], modbus.message[5], modbus.message[6], modbus.message[7], modbus.message[8], modbus.message[9], modbus.message[10]);
 }
