@@ -7,12 +7,16 @@
 #include "valves.h"
 #include "modbus.h"
 
-#define assert(a) if (!(a)) printf("%s: %s: Line %d: Assertion failed: %s\n", __FILE__, __func__, __LINE__, #a)
+/* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
+#define TUNE_VALVES_ON ((int32) CPU_FREQ / 1000 * -20)
+#define TUNE_VALVES_OFF ((int32) CPU_FREQ / 1000 * 0)
 
 /* This sets to handle the valves a hundred times per second. */
-#define INTERVAL (CPU_FREQ / 100)
+#define INTERVAL ((int32) CPU_FREQ / 100)
 /* This defines how many time steps ahead we can set a valve state */
 #define VALUES_AHEAD 10
+
+#define assert(a) if (!(a)) printf("%s: %s: Line %d: Assertion failed: %s\n", __FILE__, __func__, __LINE__, #a)
 
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 
@@ -29,17 +33,17 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	t_index const ahead_end = (end_time - valves.next_time) / INTERVAL + 1;
 	t_index i, j;
 	
+	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
+	
 	assert (begin_time >= valves.next_time);
 	assert (end_time >= begin_time);
 	assert (first_valve >= 0);
 	assert (last_valve < 16);
 	
+	/* The valves are adressed from the right to the left relative to the picture of the camera. */
 	for (i = ahead_begin; i < ahead_end; i += 1)
 		for (j = first_valve; j <= last_valve; j += 1)
-		{
-		//	printf("%d, %d\n", i, j);
-			valves.values[(valves.next_values + i) % VALUES_AHEAD][j] = true;
-		}
+			valves.values[(valves.next_values + i) % VALUES_AHEAD][15 - j] = true;
 }
 
 /* This blocks until the time to handle the valves has arrived and then sends the next packet over the modbus interface. */
@@ -51,15 +55,19 @@ void valves_handleValves() {
 	if (sleep_time > 0)
 		usleep(OscSupCycToMicroSecs(sleep_time));
 	else
-		printf("Behind by %lu ms!\n", OscSupCycToMicroSecs(-sleep_time) / 1000);
+	{
+		uint16 const behind = OscSupCycToMicroSecs(-sleep_time);
+		if (behind > 3000)
+			printf("Behind by %d ms!\n", behind / 1000);
+	}
 	
 //	printf("-> %d\n", valves.next_values);
 	
 	for (i = 0; i < 16; i += 1)
 	{
+		valves_out <<= 1;
 		if (valves.values[valves.next_values][i])
 			valves_out |= 0x0001;
-		valves_out <<= 1;
 		valves.values[valves.next_values][i] = false;
 	}
 		

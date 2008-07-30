@@ -618,13 +618,13 @@ void writeNiceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const wi
 void insertIntoValves(struct object * pObj, t_time capture_time)
 {
 	/* gives the time needed from the conveyor belt to the position. */
-	inline t_time posToTime(uint16 const pos)
+	inline t_time posToTime(int16 const pos)
 	{
 		return (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) * pos / HEIGHT_GREY + TIME_TO_TOP_OF_PICTURE;
 	}
 	
 	/* Gives the valve responsible for something at the position. */
-	inline t_index posToValve(uint16 const pos)
+	inline t_index posToValve(int16 const pos)
 	{
 		return (pos - PIXEL_BEGIN_FIRST_VALVE) * 16 / (PIXEL_END_LAST_VALVE - PIXEL_BEGIN_FIRST_VALVE);
 	}
@@ -635,11 +635,7 @@ void insertIntoValves(struct object * pObj, t_time capture_time)
 	t_index const valve_end = min(15, posToValve(pObj->right));
 	
 	if (time_bottom > time_top)
-	{
 		printf("Top: %d, Bottom: %d\n", pObj->top, pObj->bottom);
-		printf("Top: %d, Bottom: %d\n", posToTime(pObj->top), posToTime(pObj->bottom));
-		printf("Top: %d, Bottom: %d\n", time_top, time_bottom);
-	}
 	
 	valves_insertEvent(capture_time + time_bottom, capture_time + time_top, valve_begin, valve_end);
 }
@@ -648,7 +644,7 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 {
 	OSC_ERR err;
 	
-	uint8 const thresholdValue = 50;
+	uint8 const thresholdValue = 40;
 	uint32 const thresholdWeight = 500;
 	
 benchmark_init;
@@ -667,7 +663,7 @@ benchmark_delta;
 	/* masks parts of the image that contain an objcet */
 	applyThreshold(thresholdValue, FALSE, TRUE);
 	
-	valves_handleValves();
+//	valves_handleValves();
 
 benchmark_delta;
 
@@ -695,7 +691,8 @@ benchmark_delta;
 				else if (obj->classification == e_classification_sugusGreen)
 					printf("-> green\n");
 				
-				insertIntoValves(obj, capture_time);
+				if (obj->classification == e_classification_sugusYellow)
+					insertIntoValves(obj, capture_time);
 			}
 			
 	benchmark_delta;
