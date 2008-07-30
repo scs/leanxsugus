@@ -2,14 +2,15 @@
  * @brief Contails functions to controll a modbus controller.
  */
 
-#include "main.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+
+#include "support.h"
+#include "modbus.h"
 
 #define BAUDRATE B115200
 #define CONSOLE_DEVICE "/dev/ttyBF0"

@@ -2,7 +2,8 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include "main.h"
+#include "modbus.h"
+#include "process.h"
 
 #if defined(OSC_HOST)
 #define IMG_FILENAME "/var/www/image.bmp"
@@ -603,7 +604,7 @@ void writeNiceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const wi
 	
 }
 
-void processFrame(uint8 const * const pRawImg)
+void process(uint8 const * const pRawImg)
 {
 	OSC_ERR err;
 	
@@ -656,6 +657,6 @@ void processFrame(uint8 const * const pRawImg)
 	}
 }
 
-void processFrame_init() {
+void process_init() {
 //	segmentArrays_init ();
 }

@@ -3,12 +3,19 @@
  * @brief Main file of the template application. Mainly contains initialization code.
  */
 
-#include "main.h"
 #include <string.h>
 #include <sched.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+
+#include "inc/oscar.h"
+#include "process.h"
+#include "config.h"
+#include "modbus.h"
+#include "main.h"
+
+#define TEST_IMAGE_FN "test.bmp"
 
 void *hFramework;
 
@@ -90,7 +97,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_DEFAULT);
 	
 	/* Initialieses the object recognition data . */
-	processFrame_init();
+	process_init();
 	config_init();
 	modbus_init();
 	
@@ -170,7 +177,7 @@ OSC_ERR mainLoop () {
 		
 	//	printf("OscCamReadPicture = %lu us\n", OscSupCycToMicroSecs(OscSupCycGet() - cyc));
 		
-		processFrame(pFrameBuffer);
+		process(pFrameBuffer);
 	}
 	
 	return SUCCESS;

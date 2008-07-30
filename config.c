@@ -2,30 +2,13 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include "main.h"
+#include <stdbool.h>
 #include <signal.h>
-#include <stdio.h>
 #include <string.h>
 
-#if defined(OSC_HOST)
-#define IMG_FILENAME "/var/www/image.bmp"
-#else
-#define IMG_FILENAME "/home/httpd/image.bmp"
-#endif
+#include "config.h"
 
 #define CONFIG_FILENAME "/tmp/leanxsugus-config"
-
-#define DEBUG
-
-#ifdef DEBUG
-	#define printMark() printf("%s: Line %d\n", __func__, __LINE__)
-	#define m printf("%s: Line %d\n", __func__, __LINE__);
-	#define p(name) printf("%s: %ld\n", # name, name);
-#else
-	#define printMark()
-	#define m
-	#define p(name)
-#endif
 
 struct {
 	bool sort_color1;
@@ -37,7 +20,7 @@ struct {
 sig_atomic_t flag_readConfig;
 
 void schedule_readConfig(int dummy) {
-	flag_readConfig = TRUE;
+	flag_readConfig = true;
 }
 
 void readConfig() {
@@ -87,11 +70,11 @@ void readConfig() {
 		
 	//	printf("Configuration read.\n");
 		fclose(pFile);
-		flag_readConfig = FALSE;
+		flag_readConfig = false;
 	}
 }
 
 void config_init() {
-	flag_readConfig = TRUE;
+	flag_readConfig = true;
 	signal (SIGHUP, &schedule_readConfig);
 }
