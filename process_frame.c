@@ -363,7 +363,8 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 		else
 		{
 			int16 posX, posY;
-			uint8 color[3];
+			uint8 color[3], mid;
+			t_index maxComp, minComp, midComp;
 			
 			posX = 2 * obj->posWghtX - spotSize / 2;
 			posY = 2 * obj->posWghtY - spotSize / 2;
@@ -383,8 +384,71 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 			obj->color.red = color[2];
 			obj->color.green = color[1];
 			obj->color.blue = color[0];
-		
-			obj->classification = e_classification_otherColor;
+			
+			/* Find out which color components are the largest and the smallest. */
+			if (color[0] > color[1])
+				if (color[0] > color[2])
+				{
+					maxComp = 0;
+					if (color[1] > color[2])
+					{
+						minComp = 2;
+						midComp = 1;
+					}
+					else
+					{
+						minComp = 1;
+						midComp = 2;
+					}
+				}
+				else
+				{
+					maxComp = 2;
+					minComp = 1;
+					midComp = 0;
+				}
+			else
+				if (color[1] > color[2])
+				{
+					maxComp = 1;
+					if (color[0] > color[2])
+					{
+						minComp = 2;
+						midComp = 0;
+					}
+					else
+					{
+						minComp = 0;
+						midComp = 2;
+					}
+				}
+				else
+				{
+					maxComp = 2;
+					minComp = 0;
+					midComp = 1;
+				}
+			
+			mid = (uint16) (color[midComp] - color[minComp]) * 255 / (color[maxComp] - color[minComp]);
+			
+			/* Classify the object according to which color components are the largest and smallest and where in between to other lies */
+			if (minComp == 0)
+				if (maxComp == 2)
+					if (mid < 72)
+						obj->classification = e_classification_sugusRed;
+					else if (mid < 156)
+						obj->classification = e_classification_sugusOrange;
+					else
+						obj->classification = e_classification_sugusYellow;
+				else if (maxComp == 1)
+					if (mid < 166)
+						obj->classification = e_classification_sugusGreen;
+					else
+						obj->classification = e_classification_sugusYellow;
+				else
+					obj->classification = e_classification_otherColor;
+			else
+				obj->classification = e_classification_otherColor;
 		}
 	}
 }
@@ -476,23 +540,28 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	
 	for (obj = pObjs; obj != NULL; obj = obj->pNext)
 	{
-		s_color const green = { 0, ~0, 0 }, black = { 0, 0, 0 },
+		s_color const green = { 0, ~0, 0 }, red = { 0, 0, ~0 }, black = { 0, 0, 0 },
 			white = { ~0, ~0, ~0 };
-		
-		/* Objects that are too small. */
-		if (obj->classification == e_classification_tooSmall)
-			continue;
 		
 		/* Objects that are too near to the border. */
 		if (obj->classification == e_classification_tooNearToBorder)
 			continue;
 		
-		drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
+		/* Objects that are too small. */
+		if (obj->classification == e_classification_tooSmall)
+		{
+			if (obj->weight > 100)
+				drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, red);
+			
+			continue;
+		}
 		
 		{
 			s_color const color = obj->color;
 			s_color colorFill, colorBorder;
 			int16 spotPosX, spotPosY;
+			
+			drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
 			
 		//	colorFill = saturate(color);
 			colorFill = color;
@@ -539,7 +608,7 @@ void processFrame(uint8 const * const pRawImg)
 	OSC_ERR err;
 	
 	uint8 const thresholdValue = 50;
-	uint8 const thresholdWeight = 50;
+	uint32 const thresholdWeight = 500;
 	
 	err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
 	if(err != SUCCESS)
@@ -563,7 +632,19 @@ void processFrame(uint8 const * const pRawImg)
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
 			if (obj->classification != e_classification_tooSmall)
-				printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+			{
+			//	printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, Color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+				printf("Weight: %lu, Color: (%u, %u, %u) ", obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+				
+				if (obj->classification == e_classification_sugusRed)
+					printf("-> red\n");
+				else if (obj->classification == e_classification_sugusOrange)
+					printf("-> orange\n");
+				else if (obj->classification == e_classification_sugusYellow)
+					printf("-> yellow\n");
+				else if (obj->classification == e_classification_sugusGreen)
+					printf("-> green\n");
+			}
 		
 		for (obj = objs; obj != NULL; obj = obj->pNext)
 			if (obj->classification != e_classification_tooSmall)
