@@ -10,15 +10,15 @@
 #define IMG_FILENAME "/home/httpd/image.bmp"
 #endif
 
-#define widthGrey (widthCapture / 2)
-#define heightGrey (heightCapture / 2)
+#define widthGrey (WIDTH_CAPTURE / 2)
+#define heightGrey (HEIGHT_CAPTURE / 2)
 
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 //#define m
 
 struct {
 	enum EnBayerOrder enBayerOrder;
-	uint8 imgColor[3 * widthCapture * heightCapture];
+	uint8 imgColor[3 * WIDTH_CAPTURE * HEIGHT_CAPTURE];
 	/*! @brief Greyscale image with half the with an height */
 	uint8 imgGrey[widthGrey * heightGrey];
 } data;
@@ -34,7 +34,7 @@ typedef enum {
 } e_classification;
 
 typedef struct {
-	uint8 red, green, blue;
+	uint8 blue, green, red;
 } s_color;
 
 typedef struct {
@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
 	struct object {
-		t_index left, right, top, bottom;
+		uint16 left, right, top, bottom;
 		uint32 posWghtX, posWghtY;
 		uint32 weight;
 		s_color color;
@@ -373,16 +373,16 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 				posX = 0;
 			if (posY < 0)
 				posY = 0;
-			if (posX + spotSize >= widthCapture)
-				posX = widthCapture - spotSize;
-			if (posY + spotSize >= heightCapture)
-				posY = heightCapture - spotSize;
+			if (posX + spotSize >= WIDTH_CAPTURE)
+				posX = WIDTH_CAPTURE - spotSize;
+			if (posY + spotSize >= HEIGHT_CAPTURE)
+				posY = HEIGHT_CAPTURE - spotSize;
 			
-			OscVisDebayerSpot(pImgRaw, widthCapture, heightCapture, data.enBayerOrder, posX, posY, spotSize, color);
+			OscVisDebayerSpot(pImgRaw, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, posX, posY, spotSize, color);
 			
-			obj->color.red = color[0];
+			obj->color.red = color[2];
 			obj->color.green = color[1];
-			obj->color.blue = color[2];
+			obj->color.blue = color[0];
 		
 			obj->classification = e_classification_otherColor;
 		}
@@ -396,25 +396,25 @@ void drawRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 	/* Draw the horizontal lines. */
 	for (i = left; i < right; i += 1)
 	{
-		pImg[(width * top + i) * 3] = color.red;
+		pImg[(width * top + i) * 3] = color.blue;
 		pImg[(width * top + i) * 3 + 1] = color.green;
-		pImg[(width * top + i) * 3 + 2] = color.blue;
+		pImg[(width * top + i) * 3 + 2] = color.red;
 		
-		pImg[(width * (bottom - 1) + i) * 3] = color.red;
+		pImg[(width * (bottom - 1) + i) * 3] = color.blue;
 		pImg[(width * (bottom - 1) + i) * 3 + 1] = color.green;
-		pImg[(width * (bottom - 1) + i) * 3 + 2] = color.blue;
+		pImg[(width * (bottom - 1) + i) * 3 + 2] = color.red;
 	}
 	
 	/* Draw the vertical lines. */
 	for (i = top; i < bottom; i += 1)
 	{
-		pImg[(width * i + left) * 3] = color.red;
+		pImg[(width * i + left) * 3] = color.blue;
 		pImg[(width * i + left) * 3 + 1] = color.green;
-		pImg[(width * i + left) * 3 + 2] = color.blue;
+		pImg[(width * i + left) * 3 + 2] = color.red;
 		
-		pImg[(width * i + right - 1) * 3] = color.red;
+		pImg[(width * i + right - 1) * 3] = color.blue;
 		pImg[(width * i + right - 1) * 3 + 1] = color.green;
-		pImg[(width * i + right - 1) * 3 + 2] = color.blue;
+		pImg[(width * i + right - 1) * 3 + 2] = color.red;
 	}
 }
 
@@ -427,9 +427,9 @@ void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 	{
 		for (ix = left; ix < right; ix += 1)
 		{
-			pImg[(width * iy + ix) * 3] = color.red;
+			pImg[(width * iy + ix) * 3] = color.blue;
 			pImg[(width * iy + ix) * 3 + 1] = color.green;
-			pImg[(width * iy + ix) * 3 + 2] = color.blue;
+			pImg[(width * iy + ix) * 3 + 2] = color.red;
 		}
 	}
 }
@@ -456,7 +456,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	bool const markAreas = FALSE;
 	
 	/* Use the framework function to debayer the image. */
-	OscVisDebayer(pRawImg, widthCapture, heightCapture, data.enBayerOrder, data.imgColor);
+	OscVisDebayer(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgColor);
 	
 	/* Mark areas that are considered part of an object. */
 	if (markAreas)
@@ -464,7 +464,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 			for (ix = 0; ix < widthGrey; ix += 1)
 			{
 				uint8 const grey = data.imgGrey[iy * widthGrey + ix];
-				uint32 const pos = (iy * widthCapture + ix) * 6;;
+				uint32 const pos = (iy * WIDTH_CAPTURE + ix) * 6;;
 				
 				if (grey == 0)
 				{
@@ -487,7 +487,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 		if (obj->classification == e_classification_tooNearToBorder)
 			continue;
 		
-		drawRectangle(data.imgColor, widthCapture, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
+		drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
 		
 		{
 			s_color const color = obj->color;
@@ -506,22 +506,22 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 				spotPosX = 0;
 			if (spotPosY < 0)
 				spotPosY = 0;
-			if (spotPosX + spotSize >= widthCapture)
-				spotPosX = widthCapture - spotSize;
-			if (spotPosY + spotSize >= heightCapture)
-				spotPosY = heightCapture - spotSize;
+			if (spotPosX + spotSize >= WIDTH_CAPTURE)
+				spotPosX = WIDTH_CAPTURE - spotSize;
+			if (spotPosY + spotSize >= HEIGHT_CAPTURE)
+				spotPosY = HEIGHT_CAPTURE - spotSize;
 			
 			/* draws a rectangle filled with the color found */
-			fillRectangle(data.imgColor, widthCapture, spotPosX, spotPosX + spotSize, spotPosY, spotPosY + spotSize, colorFill);
-			drawRectangle(data.imgColor, widthCapture, spotPosX, spotPosX + spotSize, spotPosY, spotPosY + spotSize, colorBorder);
+			fillRectangle(data.imgColor, WIDTH_CAPTURE, spotPosX, spotPosX + spotSize, spotPosY, spotPosY + spotSize, colorFill);
+			drawRectangle(data.imgColor, WIDTH_CAPTURE, spotPosX, spotPosX + spotSize, spotPosY, spotPosY + spotSize, colorBorder);
 		}
 	}
 	
 	{
 		struct OSC_PICTURE pic;
 		
-		pic.width = widthCapture;
-		pic.height = heightCapture;
+		pic.width = WIDTH_CAPTURE;
+		pic.height = HEIGHT_CAPTURE;
 		pic.type = OSC_PICTURE_RGB_24;
 		pic.data = (void *) data.imgColor;
 		
@@ -538,7 +538,7 @@ void processFrame(uint8 const * const pRawImg)
 {
 	OSC_ERR err;
 	
-	uint8 const thresholdValue = 120;
+	uint8 const thresholdValue = 50;
 	uint8 const thresholdWeight = 50;
 	
 	err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
@@ -548,13 +548,14 @@ void processFrame(uint8 const * const pRawImg)
 		return;
 	}
 	
-	err = OscVisDebayerGreyscaleHalfSize(pRawImg, widthCapture, heightCapture, data.enBayerOrder, data.imgGrey);
+	err = OscVisDebayerGreyscaleHalfSize(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgGrey);
 	
 	/* masks parts of the image that contain an objcet */
 	applyThreshold(thresholdValue, FALSE, TRUE);
 	
 	{
 		struct object * objs = findObjects(~0), * obj;
+		uint16 valves = 0;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		writeNiceDebugPicture(pRawImg, objs, 8);
@@ -562,7 +563,13 @@ void processFrame(uint8 const * const pRawImg)
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
 			if (obj->classification != e_classification_tooSmall)
-				printf("Left: %lu, Right: %lu, Top: %lu, Bottom: %lu, Weight: %lu, color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+				printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+		
+		for (obj = objs; obj != NULL; obj = obj->pNext)
+			if (obj->classification != e_classification_tooSmall)
+				valves = valves << 1 | 0x0001;
+		
+		modbus_sendMessage(valves);
 		
 		printf("\n");
 	}

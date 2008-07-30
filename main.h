@@ -20,23 +20,24 @@
 /*! @brief Gets the length of a field. This does not work for pointers, which are the same as fields. */
 #define length(a) ((sizeof (a)) / sizeof *(a))
 
-#define widthCapture OSC_CAM_MAX_IMAGE_WIDTH
-#define heightCapture 272 /* OSC_CAM_MAX_IMAGE_HEIGHT */
+#define WIDTH_CAPTURE OSC_CAM_MAX_IMAGE_WIDTH
+#define HEIGHT_CAPTURE 272 /* OSC_CAM_MAX_IMAGE_HEIGHT */
 
-typedef uint16 t_index;
+typedef int16 t_index;
 
-/* - Functions - */
-/*!
- * @brief Unload everything before exiting.
- * 
- * @return SUCCESS or an appropriate error code.
- */
+/* from main.c */
 OSC_ERR Unload();
 
+/* from process_frame.c */
 void processFrame_init();
 void processFrame(uint8 const * const pRawImg);
 
-void readConfig();
+/* from config.c */
 void config_init();
+void config_read();
+
+/* from modbus.c */
+void modbus_init();
+void modbus_sendMessage(uint16 const valves);
 
 #endif /*LEANXSUGUS_H_*/

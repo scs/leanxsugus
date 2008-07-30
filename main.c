@@ -87,8 +87,12 @@ static OSC_ERR init(const int argc, const char * * argv)
 	}
 	
 //	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_180DEG_ROTATE);
+	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_DEFAULT);
 	
 	/* Initialieses the object recognition data . */
+	processFrame_init();
+	config_init();
+	modbus_init();
 	
 	return SUCCESS;
 	
@@ -119,10 +123,17 @@ uint8 frameBuffers[2][OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
 OSC_ERR mainLoop () {
 	OSC_ERR err = SUCCESS;
 	
-	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - widthCapture) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - heightCapture) / 2, widthCapture, heightCapture);
+	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2, WIDTH_CAPTURE, HEIGHT_CAPTURE);
 	if (err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Unable to set the area of interest!\n", __func__);
+		return err;
+	}
+	
+	err = OscCamSetShutterWidth(5000);
+	if (err != SUCCESS)
+	{
+		OscLog(ERROR, "%s: Unable to set the exposure time!\n", __func__);
 		return err;
 	}
 	
@@ -134,9 +145,11 @@ OSC_ERR mainLoop () {
 	}
 	
 	loop {
-		static uint8 * pFrameBuffer;
+		uint8 * pFrameBuffer;
 		
-	//	readConfig();
+	//	config_read();
+		
+		uint32 cyc = OscSupCycGet();
 		
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
@@ -145,12 +158,17 @@ OSC_ERR mainLoop () {
 			return err;
 		}
 		
+	//	printf("OscCamSetupCapture: %lu us\n", OscSupCycToMicroSecs(OscSupCycGet() - cyc));
+		cyc = OscSupCycGet();
+		
 		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to read the picture (%d)!\n", __func__, err);
 			return err;
 		}
+		
+	//	printf("OscCamReadPicture = %lu us\n", OscSupCycToMicroSecs(OscSupCycGet() - cyc));
 		
 		processFrame(pFrameBuffer);
 	}
@@ -182,9 +200,6 @@ int main(const int argc, const char ** argv)
 		return err;
 	}
 	OscLog(INFO, "Initialization successful!\n");
-	
-	processFrame_init();
-	config_init();
 	
 	mainLoop();
 		
