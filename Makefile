@@ -48,8 +48,7 @@ $(OUT)_% :
 # Compiles the executable
 target: $(SOURCES) inc/*.h lib/libosc_target.a
 	@echo "Compiling for target..."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGET_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
+	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target executable done."
 	make target -C CGI
 	@echo "Target CGI done."
@@ -57,8 +56,7 @@ target: $(SOURCES) inc/*.h lib/libosc_target.a
 	
 targetdbg: $(SOURCES) inc/*.h lib/libosc_target.a
 	@echo "Compiling for target..."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGETDBG_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
+	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGETDBG_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target executable done."
 	make targetdbg -C CGI
 	@echo "Target CGI done."
@@ -66,8 +64,7 @@ targetdbg: $(SOURCES) inc/*.h lib/libosc_target.a
 	
 targetsim: $(SOURCES) inc/*.h lib/libosc_target_sim.a
 	@echo "Compiling for target..."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target_sim.a $(TARGETSIM_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGETSIM_SUFFIX)
+	$(TARGET_CC) $(SOURCES) lib/libosc_target_sim.a $(TARGETSIM_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGETSIM_SUFFIX)
 	@echo "Target executable done."
 	make target -C CGI
 	@echo "Target CGI done."
@@ -75,8 +72,7 @@ targetsim: $(SOURCES) inc/*.h lib/libosc_target_sim.a
 	
 host: $(SOURCES) inc/*.h lib/libosc_host.a
 	@echo "Compiling for host.."
-	$(HOST_CC) $(SOURCES) lib/libosc_host.a $(HOST_CFLAGS) \
-	$(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
+	$(HOST_CC) $(SOURCES) lib/libosc_host.a $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
 	@echo "Host executable done."
 	make host -C CGI
 	@echo "Host CGI done."

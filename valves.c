@@ -70,7 +70,7 @@ void valves_handleValves() {
 			valves_out |= 0x0001;
 		valves.values[valves.next_values][i] = false;
 	}
-		
+	
 	modbus_sendMessage(valves_out);
 	
 	valves.next_values = (valves.next_values + 1) % VALUES_AHEAD;

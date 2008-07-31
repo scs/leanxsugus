@@ -82,7 +82,7 @@ void modbus_init()
 	
 	bzero(&newtio, sizeof newtio);
 	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD | PARENB;
-	newtio.c_iflag = IGNPAR;
+	newtio.c_iflag = IGNPAR | IGNBRK;
 	newtio.c_oflag = 0;
 	newtio.c_lflag = 0;
 	 
