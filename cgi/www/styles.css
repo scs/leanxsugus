@@ -1,3 +1,106 @@
-body { font: 100% arial, helvetica, sans-serif; margin: 0; }
-.big-box { margin: 10px; padding: 10px; border-width: 1px; border-style: solid; border-color: #d00 }
-h3 { line-height: 100%; margin-top: 0px; margin-bottom: 10px; }
+body {
+	font-family: sans-serif;
+	margin: 0;
+}
+
+.title {
+	margin-top: 40px;
+	margin-bottom: 40px;
+	text-align: center;
+	font-size: 36px;
+	font-weight: bold;
+}
+
+.table {
+	margin: 0px 10px;
+	table-layout: fixed;
+	border-collapse: collapse;
+	font-size: 24px;
+	font-weight: bold;
+}
+
+.table tr {
+	height: 50px;
+	border-style: solid none;
+	border-width: 2px 20px;
+	border-color: #e00;
+}
+
+.table td {
+	padding: 10px 20px;
+}
+
+.table .header {
+	height: 40px;
+	border-style: none;
+	color: #aaa;
+}
+
+.table .header > * {
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+
+.table .footer {
+	height: 30px;
+	border-style: none;
+}
+
+.table .footer .footer {
+	font-size: 21px;
+	text-align: right;
+	color: #aaa;
+}
+
+.table .footer > * {
+	padding-top: 20px;
+	padding-bottom: 0px;
+}
+
+.swatch {
+	height: 40px;
+	width: 40px;
+	border-style: solid;
+	border-width: 2px;
+}
+
+.button {
+	padding: 10px;
+	border-style: outset;
+	border-width: 3px;
+	border-color: red;
+}
+
+.aktiv#sort-green {
+	color: #0a0;
+}
+
+.aktiv#sort-yellow {
+	color: #fd0;
+}
+
+.aktiv#sort-orange {
+	color: #f70;
+}
+
+.aktiv#sort-red {
+	color: #f00;
+}
+
+.inaktiv {
+	color: #aaa;
+}
+
+.big-box {
+	margin: 10px;
+	padding: 10px;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #d00;
+}
+
+h3 {
+	line-height: 100%;
+	margin-top: 0px;
+	margin-bottom: 10px;
+}
