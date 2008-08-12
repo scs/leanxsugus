@@ -1,5 +1,3 @@
-var xmlHttp = null;
-var isIE = false;
 var counter = 0;
 
 function elem(elemIdentString) {
@@ -7,6 +5,8 @@ function elem(elemIdentString) {
 }
 
 function getHTTPObject() {
+	var xmlHttp;
+	
 	try {
 		// Firefox, Opera 8.0+, Safari
 		xmlHttp = new XMLHttpRequest();
@@ -15,9 +15,6 @@ function getHTTPObject() {
 			xmlHttp.overrideMimeType('text/html');
 		}
 	} catch (e) {
-		// Internet Explorer
-		isIE = true;
-		
 		var msxmlhttp = new Array('Msxml2.XMLHTTP.5.0', 'Msxml2.XMLHTTP.4.0', 'Msxml2.XMLHTTP.3.0', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP');
 		for (var i = 0; i < msxmlhttp.length; i += 1) {
 			try {
@@ -30,11 +27,13 @@ function getHTTPObject() {
 		if (xmlHttp == null)
 			alert("Your browser does not support AJAX!");
 	}
+	
+	return xmlHttp;
 }
 
 function onLoad() {
 //	updateData();
-	refreshImage();
+//	refreshImage();
 }
 
 function refreshImage() {
@@ -93,4 +92,14 @@ function useHttpResponse() {
 		}
 		setTimeout("updateData()", 1);
 	}
+}
+
+function sendConfig(name, value) {
+	var message = name + "=" + value;
+	var xmlHttp = getHTTPObject();
+	
+	xmlHttp.open('POST', 'http://cgi-bin/config.cgi', false);
+	xmlHttp.setRequestHeader("Content-length", message.length);
+	xmlHttp.setRequestHeader("Connection", "close");
+	xmlHttp.send(message);
 }

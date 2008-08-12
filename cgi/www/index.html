@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
@@ -6,8 +6,9 @@
 		<title>LeanXsugus WebGUI</title>
 		<link rel="stylesheet" type="text/css" href="styles.css" />
 		<script language="javascript" src="functions.js"></script>
+		<base href="http://192.168.11.28/" />
 	</head>
-	<body onLoad="javascript: onLoad()">
+	<body onLoad="onLoad();">
 		<div class="title">
 			LeanXsugus
 		</div>
@@ -18,7 +19,7 @@
 				<td width="100px">Zähler</td>
 				<td width="150px">Aktion</td>
 			</tr>
-			<tr>
+			<tr onclick="sendConfig('sort_color1', 'true');">
 				<td>
 					<div class="swatch" style="background-color: #0d0; border-color: #070; " />
 				</td>
