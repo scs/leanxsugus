@@ -10,13 +10,6 @@
 
 #define CONFIG_FILENAME "/tmp/leanxsugus-config"
 
-struct {
-	bool sort_color1;
-	bool sort_color2;
-	bool sort_color3;
-	bool sort_color4;
-} configuration;
-
 sig_atomic_t flag_readConfig;
 
 void scheduleRead(int dummy) {
@@ -36,36 +29,32 @@ void config_read() {
 	//	printf("Reading configuration...\n");
 		
 		while (! feof(pFile)) {
-			char buf0[100], buf1[100], buf2[100];
+			char buf[80]; /* Damned be the ones who need more than 80 characters. */
 			char * pos;
 			
 			/* Get one line and remove the trailing newline. */
-			fgets(buf0, sizeof buf0, pFile);
-			buf0[strlen(buf0) - 1] = 0;
+			fgets(buf, sizeof buf, pFile);
+			buf[strlen(buf) - 1] = 0;
 			
 			/* Find the equals sign. */
-			pos = strstr(buf0, "=");
+			pos = strstr(buf, "=");
 			
-			/* Invalid line. */
-			if (pos == NULL)
+			if (pos == NULL) /* Invalid line. */
 				continue;
+			
 			*pos = 0;
+			pos += 1; /* Move into the second part of the string. */
 			
-			/* Split the string. */
-			strcpy(buf1, buf0);
-			strcpy(buf2, pos + 1);
+			printf("%s = %s\n", buf, pos);
 			
-		//	printf("%s\n%s\n", buf1, buf2);
-			
-			if (strcmp(buf1, "sort_color1") == 0)
-				configuration.sort_color1 = strcmp(buf2, "true") == 0;
-			else if (strcmp(buf1, "sort_color2") == 0)
-				configuration.sort_color2 = strcmp(buf2, "true") == 0;
-			else if (strcmp(buf1, "sort_color3") == 0)
-				configuration.sort_color3 = strcmp(buf2, "true") == 0;
-			else if (strcmp(buf1, "sort_color4") == 0)
-				configuration.sort_color4 = strcmp(buf2, "true") == 0;
-			
+			if (strcmp(buf, "sort_color1") == 0)
+				configuration.sort_color1 = strcmp(pos, "true") == 0;
+			else if (strcmp(buf, "sort_color2") == 0)
+				configuration.sort_color2 = strcmp(pos, "true") == 0;
+			else if (strcmp(buf, "sort_color3") == 0)
+				configuration.sort_color3 = strcmp(pos, "true") == 0;
+			else if (strcmp(buf, "sort_color4") == 0)
+				configuration.sort_color4 = strcmp(pos, "true") == 0;
 		}
 		
 	//	printf("Configuration read.\n");
