@@ -3,6 +3,7 @@
  */
 
 #include "valves.h"
+#include "config.h"
 #include "process.h"
 
 #if defined(OSC_HOST)
@@ -674,7 +675,10 @@ benchmark_delta;
 	//	writeNiceDebugPicture(pRawImg, objs, 8);
 	
 	benchmark_delta;	
-	
+		
+		// This clears the whole screen and moves the curser to the upper left corner.
+	//	printf("\e[H\e[J");
+		
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
 			if (obj->classification != e_classification_tooSmall)
@@ -682,17 +686,22 @@ benchmark_delta;
 			//	printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, Color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 				printf("Weight: %lu, Color: (%u, %u, %u) ", obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 				
-				if (obj->classification == e_classification_sugusRed)
-					printf("-> red\n");
-				else if (obj->classification == e_classification_sugusOrange)
-					printf("-> orange\n");
+				if (obj->classification == e_classification_sugusGreen)
+					printf("-> green");
 				else if (obj->classification == e_classification_sugusYellow)
-					printf("-> yellow\n");
-				else if (obj->classification == e_classification_sugusGreen)
-					printf("-> green\n");
+					printf("-> yellow");
+				else if (obj->classification == e_classification_sugusOrange)
+					printf("-> orange");
+				else if (obj->classification == e_classification_sugusRed)
+					printf("-> red");
 				
-				if (obj->classification == e_classification_sugusYellow)
+				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color1 || (obj->classification == e_classification_sugusYellow) && configuration.sort_color2 || (obj->classification == e_classification_sugusOrange) && configuration.sort_color3 || (obj->classification == e_classification_sugusRed) && configuration.sort_color4)
+				{
+					printf(" -> sorted...");
 					insertIntoValves(obj, capture_time);
+				}
+				
+				printf("\n");
 			}
 			
 	benchmark_delta;
