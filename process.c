@@ -15,7 +15,7 @@
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
 
-#define BENCHMARK_ON
+//#define BENCHMARK_ON
 
 #ifdef BENCHMARK_ON
 uint32 benchmark_cyc;
@@ -180,38 +180,24 @@ void applyThreshold(uint8 const threshold, bool const maskLower, bool const mask
  */
 void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * const pSegArr)
 {
-	uint8 debayerPixel(uint8 const * const pImg)
-	{
-		uint8 cellRed, cellGreen1, cellGreen2, cellBlue;
-		uint16 grey;
-		
-		cellRed = pImg[0];
-		cellGreen1 = pImg[1];
-		cellGreen2 = pImg[WIDTH_CAPTURE];
-		cellBlue = pImg[WIDTH_CAPTURE + 1];
-		
-		grey = (uint16)cellRed * 2 + (uint16)cellGreen1 + (uint16)cellGreen2 + (uint16)cellBlue * 2;
-		return grey / 6;
-	}
-	
 	uint16 i = 0;
 	
 	for (pSegArr->numSegments = 0;
 		pSegArr->numSegments < length (pSegArr->segments);
 		pSegArr->numSegments += 1)
 	{	
-		while (i < WIDTH_CAPTURE && debayerPixel(pImg + i) < value)
-			i += 2;
-		pSegArr->segments[pSegArr->numSegments].begin = i / 2;
-		if (i == WIDTH_CAPTURE)
+		while (i < WIDTH_GREY && pImg[i] != value)
+			i += 1;
+		pSegArr->segments[pSegArr->numSegments].begin = i;
+		if (i == WIDTH_GREY)
 			break;
 		
-		while (i < WIDTH_CAPTURE && debayerPixel(pImg + i) >= value)
-			i += 2;
+		while (i < WIDTH_GREY && pImg[i] == value)
+			i += 1;
 		/* we ended a segment, possibly at the end of the line */
-		pSegArr->segments[pSegArr->numSegments].end = i / 2;
+		pSegArr->segments[pSegArr->numSegments].end = i;
 		pSegArr->segments[pSegArr->numSegments].pObject = NULL;
-		if (i == WIDTH_CAPTURE)
+		if (i == WIDTH_GREY)
 		{
 			pSegArr->numSegments += 1;
 			break;
@@ -229,7 +215,7 @@ void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * 
  * @param value The value to be considered part of an object.
  * @return A pointer to the object array.
  */
-struct object * findObjects(uint8 const * const pRawImg, uint8 const value) {
+struct object * findObjects(uint8 const value) {
 	struct object * createObjectForSegment(t_index line, struct segment * pSeg, s_objectPool * pObjPool)
 	{
 		struct object * obj = pObjPool->pFirst[0];
@@ -298,7 +284,7 @@ struct object * findObjects(uint8 const * const pRawImg, uint8 const value) {
 	
 	segsCurr->numSegments = 0;
 	
-	for (i = 0; i < HEIGHT_CAPTURE; i += 2) /* this loops over every line. */
+	for (i = 0; i < HEIGHT_GREY; i += 1) /* this loops over every line, starting from the second */
 	{ /* both segsLast and segsCurr point to a valid aSegment instance */
 		struct object * obj = NULL; /* This holds the object for the last segment processed. */
 		
@@ -306,7 +292,7 @@ struct object * findObjects(uint8 const * const pRawImg, uint8 const value) {
 		s_segmentArray * segmentsTemp = segsLast;
 		segsLast = segsCurr;
 		segsCurr = segmentsTemp;
-		findSegments(pRawImg + i * WIDTH_CAPTURE, value, segsCurr);
+		findSegments(data.imgGrey + i * WIDTH_GREY, value, segsCurr);
 		
 		iLast = iCurrent = 0;
 		
@@ -319,7 +305,7 @@ struct object * findObjects(uint8 const * const pRawImg, uint8 const value) {
 			{ /* There are segments on the current line. */
 				if (obj == NULL)
 				{ /* This means that we either moved on the current line or that we are on the first segment. So we create an object for the lower line. */
-					obj = createObjectForSegment(i / 2, segsCurr->segments + iCurrent, &objPool);
+					obj = createObjectForSegment(i, segsCurr->segments + iCurrent, &objPool);
 				}
 				
 				/* So we check whether we also have segments on the last line. */
@@ -671,21 +657,19 @@ benchmark_init;
 		return;
 	}
 	
-//	err = OscVisDebayerGreyscaleHalfSize(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgGrey);
+	err = OscVisDebayerGreyscaleHalfSize(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgGrey);
 
 benchmark_delta;
 
 	/* masks parts of the image that contain an objcet */
-//	applyThreshold(thresholdValue, FALSE, TRUE);
+	applyThreshold(thresholdValue, FALSE, TRUE);
 	
 //	valves_handleValves();
 
-//benchmark_delta;
+benchmark_delta;
 
 	{
-		struct object * objs = findObjects(pRawImg, thresholdValue), * obj;
-		
-	benchmark_delta;	
+		struct object * objs = findObjects(~0), * obj;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 	//	writeNiceDebugPicture(pRawImg, objs, 8);
