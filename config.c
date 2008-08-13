@@ -13,62 +13,87 @@
 
 #define CONFIG_FILENAME "/tmp/leanxsugus-config"
 
-sig_atomic_t flag_readConfig;
-
-void scheduleRead(int dummy) {
-	flag_readConfig = true;
-}
-
 void config_read() {
-	int fd = open(CONFIG_FILENAME, O_NONBLOCK | O_RDONLY);
-	FILE * file = fdopen(fd, "r");
+	static int fd = -1;
+	static FILE * file;
+	char buf[80] = { 0 }; /* Damned be the ones who need more than 80 characters. */
+	char * pos, * ret;
 	
 	if (fd == -1)
 	{ /* There is no configuration pipe. */
-		printf("There is no configuration pipe.\n");
-		return;
+		int fd = open(CONFIG_FILENAME, O_NONBLOCK | O_RDONLY);
+		
+		if (fd == -1)
+		{
+			printf("There is no configuration pipe.\n");
+			return;
+		}
+		
+		file = fdopen(fd, "r");
 	}
 	
-	printf("Reading in configuration commands...\n");
+	/* Gets one line. */
+	ret = fgets(buf, sizeof buf, file);
 	
-	loop {
-		char buf[80] = { 0 }; /* Damned be the ones who need more than 80 characters. */
-		char * pos;
-		char * ret = fgets(buf, sizeof buf, file); /* Gets one line. */
+	if (ret == NULL) {
+		if (feof(file))
+		{ /* There was no data available in the pipe. */
+			printf("No commands availible...\n");
+			
+			fclose(file);
+			close(fd);
+			
+			return;
+		}
 		
-		if (feof(file)) /* There was no data available in the pipe. */
-			break;
-		
-		if (ret == NULL && errno == EAGAIN) /* There is data, but not a complete line. */
-			continue;
-		
-		/* Find the equals sign. */
-		pos = strstr(buf, "=");
-		
-		if (pos == NULL) /* There was no equals sign in this line so we discard it at the moment. */
-			continue;
-		
+		if (errno == EAGAIN)
+		{ /* There is data, but not a complete line. */
+			printf("Waiting for a complete line...\n");
+			return;
+		}
+	}
+	
+	/* Find the equals sign. */
+	pos = strstr(buf, "=");
+	
+	/* Test if there was an equals sign in the line */
+	if (pos != NULL)
+	{
 		buf[strlen(buf) - 1] = 0; /* Remove the trailing newline. */
 		*pos = 0; /* End the first part of the line. */
 		pos += 1; /* Move into the second part of the string. */
 		
 		printf("%s = %s\n", buf, pos);
 		
-		if (strcmp(buf, "sort_color1") == 0)
-			configuration.sort_color1 = strcmp(pos, "true") == 0;
+		if (strcmp(buf, "sort_color0") == 0)
+			configuration.sort_color[0] = strcmp(pos, "true") == 0;
+		else if (strcmp(buf, "sort_color1") == 0)
+			configuration.sort_color[1] = strcmp(pos, "true") == 0;
 		else if (strcmp(buf, "sort_color2") == 0)
-			configuration.sort_color2 = strcmp(pos, "true") == 0;
+			configuration.sort_color[2] = strcmp(pos, "true") == 0;
 		else if (strcmp(buf, "sort_color3") == 0)
-			configuration.sort_color3 = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color4") == 0)
-			configuration.sort_color4 = strcmp(pos, "true") == 0;
+			configuration.sort_color[3] = strcmp(pos, "true") == 0;
 	}
-	
-	close(fd);
-	fclose(file);
+	else
+		if (strcmp(buf, "reset_counter") == 0)
+		{
+			configuration.count_color[0] = 0;
+			configuration.count_color[1] = 0;
+			configuration.count_color[2] = 0;
+			configuration.count_color[3] = 0;
+		}
 }
 
 void config_init() {
-	flag_readConfig = true;
-	signal (SIGHUP, &scheduleRead);
+	configuration.sort_color[0] = true;
+	configuration.sort_color[1] = true;
+	configuration.sort_color[2] = true;
+	configuration.sort_color[3] = true;
+	
+	configuration.count_color[0] = 0;
+	configuration.count_color[1] = 0;
+	configuration.count_color[2] = 0;
+	configuration.count_color[3] = 0;
+	
+	configuration.count_sorted = 0;
 }

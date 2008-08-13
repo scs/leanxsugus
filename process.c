@@ -635,21 +635,35 @@ benchmark_delta;
 				printf("Weight: %lu, Color: (%u, %u, %u) ", obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 				
 				if (obj->classification == e_classification_sugusGreen)
-					printf("-> green");
-				else if (obj->classification == e_classification_sugusYellow)
-					printf("-> yellow");
-				else if (obj->classification == e_classification_sugusOrange)
-					printf("-> orange");
-				else if (obj->classification == e_classification_sugusRed)
-					printf("-> red");
-				
-				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color1 || (obj->classification == e_classification_sugusYellow) && configuration.sort_color2 || (obj->classification == e_classification_sugusOrange) && configuration.sort_color3 || (obj->classification == e_classification_sugusRed) && configuration.sort_color4)
 				{
-					printf(" -> sorted...");
-					insertIntoValves(obj, capture_time);
+					printf("-> green");
+					configuration.count_color[0] += 1;
+				}
+				else if (obj->classification == e_classification_sugusYellow)
+				{
+					printf("-> yellow");
+					configuration.count_color[1] += 1;
+				}
+				else if (obj->classification == e_classification_sugusOrange)
+				{
+					printf("-> orange");
+					configuration.count_color[2] += 1;
+				}
+				else if (obj->classification == e_classification_sugusRed)
+				{
+					printf("-> red");
+					configuration.count_color[3] += 1;
 				}
 				
-				printf("\n");
+				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3])
+				{
+					printf(" -> sorted...\n");
+					insertIntoValves(obj, capture_time);
+					
+					configuration.count_sorted += 1;
+				}
+				else
+					printf("\n");
 			}
 			
 	benchmark_delta;
