@@ -95,6 +95,7 @@ get :
 # deploying to the device
 .PHONY : deploy
 deploy : $(OUT)$(TARGET_SUFFIX)
+	rcp -rp runapp.sh root@$(CONFIG_TARGET_IP):/app/
 	rcp -rp $(OUT)$(TARGET_SUFFIX) root@$(CONFIG_TARGET_IP):/app/$(OUT)
 	rcp -rp cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/app/
 	@ echo "Application deployed."
@@ -102,6 +103,7 @@ deploy : $(OUT)$(TARGET_SUFFIX)
 # deploying the simulation binary to the device
 .PHONY : deploysim
 deploysim : $(OUT)$(TARGETSIM_SUFFIX)
+	rcp -rp runapp.sh root@$(CONFIG_TARGET_IP):/app/
 	rcp -rp $(OUT)$(TARGETSIM_SUFFIX) root@$(CONFIG_TARGET_IP):/app/$(OUT)
 	rcp -rp cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/app/
 	@ echo "Application deployed."
