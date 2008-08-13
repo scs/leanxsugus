@@ -1,0 +1,9 @@
+#! /bin/bash
+
+COLORS="red orange yellow green"
+
+for i in $COLORS; do
+	echo "$i:"
+	./classify.hs normalized/color-$i.txt
+	echo
+done
