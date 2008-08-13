@@ -65,13 +65,13 @@ void config_read() {
 		
 		printf("%s = %s\n", buf, pos);
 		
-		if (strcmp(buf, "sort_color0") == 0)
+		if (strcmp(buf, "sort_color_0") == 0)
 			configuration.sort_color[0] = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color1") == 0)
+		else if (strcmp(buf, "sort_color_1") == 0)
 			configuration.sort_color[1] = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color2") == 0)
+		else if (strcmp(buf, "sort_color_2") == 0)
 			configuration.sort_color[2] = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color3") == 0)
+		else if (strcmp(buf, "sort_color_3") == 0)
 			configuration.sort_color[3] = strcmp(pos, "true") == 0;
 	}
 	else
