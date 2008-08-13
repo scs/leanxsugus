@@ -15,7 +15,7 @@
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
 
-//#define BENCHMARK_ON
+#define BENCHMARK_ON
 
 #ifdef BENCHMARK_ON
 uint32 benchmark_cyc;
@@ -135,42 +135,6 @@ void objectPool_move (s_objectPool * const pPool, struct object * const pObj, t_
 }
 
 /*!
- * @brief Mask images with a threshold.
- * 
- * Masks pixels of an image according to a threshold. Pixels darker or lighter than the threshold are masked with the darkes or brightest value respectively
- * 
- * The output picture has 8 bit greyscale cells with halve the with and height of the original image.
- * 
- * @param pImg Pointer to the raw input picture of size width x height.
- * @param width Width of the input and output image.
- * @param height Height of the input and output image.
- * @param threshold The threshold uf the threshold to use. True menas that values greater than threshold are masked to the maximum value (255). False means that values smaller than the threshod are masked to the minimum value (0).
- * @param maskLower If set, pixels with a value smaller than the threshold are masked with the smalles value (0).
- * @param maskUpper If set, pixels with a value of threshold or greater are masked with the largest value (255).
- */
-void applyThreshold(uint8 const threshold, bool const maskLower, bool const maskUpper) {
-	uint32 pos;
-	
-	if (maskLower)
-		if (maskUpper)
-			for (pos = 0; pos < WIDTH_GREY * HEIGHT_GREY; pos += 1)
-				if (data.imgGrey[pos] < threshold)
-					data.imgGrey[pos] = 0;
-				else
-					data.imgGrey[pos] = ~0;
-		else
-			for (pos = 0; pos < WIDTH_GREY * HEIGHT_GREY; pos += 1)
-				if (data.imgGrey[pos] < threshold)
-					data.imgGrey[pos] = 0;
-				else;
-	else
-		if (maskUpper)
-			for (pos = 0; pos < WIDTH_GREY * HEIGHT_GREY; pos += 1)
-				if (data.imgGrey[pos] >= threshold)
-					data.imgGrey[pos] = ~0;
-}
-
-/*!
  * @brief Find segments in the first line of a picture.
  *
  * @param pImg The image to find the segments in.
@@ -186,13 +150,13 @@ void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * 
 		pSegArr->numSegments < length (pSegArr->segments);
 		pSegArr->numSegments += 1)
 	{	
-		while (i < WIDTH_GREY && pImg[i] != value)
+		while (i < WIDTH_GREY && pImg[i] < value)
 			i += 1;
 		pSegArr->segments[pSegArr->numSegments].begin = i;
 		if (i == WIDTH_GREY)
 			break;
 		
-		while (i < WIDTH_GREY && pImg[i] == value)
+		while (i < WIDTH_GREY && pImg[i] >= value)
 			i += 1;
 		/* we ended a segment, possibly at the end of the line */
 		pSegArr->segments[pSegArr->numSegments].end = i;
@@ -661,15 +625,8 @@ benchmark_init;
 
 benchmark_delta;
 
-	/* masks parts of the image that contain an objcet */
-	applyThreshold(thresholdValue, FALSE, TRUE);
-	
-//	valves_handleValves();
-
-benchmark_delta;
-
 	{
-		struct object * objs = findObjects(~0), * obj;
+		struct object * objs = findObjects(thresholdValue), * obj;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 	//	writeNiceDebugPicture(pRawImg, objs, 8);
