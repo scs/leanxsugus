@@ -11,7 +11,7 @@
 
 #include "config.h"
 
-#define CONFIG_FILENAME "/tmp/leanxsugus-config"
+#define CONFIG_FILENAME "/home/httpd/cgi-bin/config"
 #define STATISTICS_FILENAME "/home/httpd/statistics.txt"
 
 void config_write()
