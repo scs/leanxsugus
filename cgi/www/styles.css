@@ -71,19 +71,19 @@ body {
 	border-color: red;
 }
 
-.aktiv#sort-green {
+.aktiv#sort_color_0 {
 	color: #0a0;
 }
 
-.aktiv#sort-yellow {
+.aktiv#sort_color_1 {
 	color: #fd0;
 }
 
-.aktiv#sort-orange {
+.aktiv#sort_color_2 {
 	color: #f70;
 }
 
-.aktiv#sort-red {
+.aktiv#sort_color_3 {
 	color: #f00;
 }
 

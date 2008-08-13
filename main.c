@@ -166,10 +166,11 @@ OSC_ERR mainLoop () {
 			return err;
 		}
 		capture_time = OscSupCycGet();
+				
+		valves_handleValves();
 		
 		config_read();
-		
-		valves_handleValves();
+		config_write();
 		
 		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)

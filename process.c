@@ -15,7 +15,7 @@
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
 
-#define BENCHMARK_ON
+//#define BENCHMARK_ON
 
 #ifdef BENCHMARK_ON
 uint32 benchmark_cyc;
@@ -632,43 +632,43 @@ benchmark_delta;
 			if (obj->classification != e_classification_tooSmall)
 			{
 			//	printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, Color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
-				printf("Weight: %lu, Color: (%u, %u, %u) ", obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+			//	printf("Weight: %lu, Color: (%u, %u, %u) ", obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 				
 				if (obj->classification == e_classification_sugusGreen)
 				{
-					printf("-> green");
+				//	printf("-> green");
 					configuration.count_color[0] += 1;
 				}
 				else if (obj->classification == e_classification_sugusYellow)
 				{
-					printf("-> yellow");
+				//	printf("-> yellow");
 					configuration.count_color[1] += 1;
 				}
 				else if (obj->classification == e_classification_sugusOrange)
 				{
-					printf("-> orange");
+				//	printf("-> orange");
 					configuration.count_color[2] += 1;
 				}
 				else if (obj->classification == e_classification_sugusRed)
 				{
-					printf("-> red");
+				//	printf("-> red");
 					configuration.count_color[3] += 1;
 				}
 				
 				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3])
 				{
-					printf(" -> sorted...\n");
+				//	printf(" -> sorted...\n");
 					insertIntoValves(obj, capture_time);
 					
 					configuration.count_sorted += 1;
 				}
-				else
-					printf("\n");
+			//	else
+				//	printf("\n");
 			}
 			
 	benchmark_delta;
 	
-		printf("\n");
+	//	printf("\n");
 	}
 }
 

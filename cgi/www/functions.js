@@ -1,7 +1,11 @@
-var counter = 0;
+var configuration = new Object;
 
-function elem(elemIdentString) {
-	return document.getElementById(elemIdentString);
+function setElementText(id, text) {
+	document.getElementById(id).firstChild.nodeValue = text
+}
+
+function setElementClass(id, name) {
+	document.getElementById(id).className = name
 }
 
 function getHTTPObject() {
@@ -32,71 +36,30 @@ function getHTTPObject() {
 }
 
 function onLoad() {
-//	updateData();
-//	refreshImage();
+	initConfig();
+	updateConfig();
 }
 
-function refreshImage() {
-	counter += 1;
-	elem("camimage").src = "/image.bmp?" + counter;
+function initConfig() {
+	configuration.sort_color_0 = false;
+	configuration.sort_color_1 = false;
+	configuration.sort_color_2 = false;
+	configuration.sort_color_3 = false;
 	
-	setTimeout("refreshImage()", 500);
-}
-
-function updateData() {
-	var parameters = "";
+	configuration.count_color_0 = 0;
+	configuration.count_color_1 = 0;
+	configuration.count_color_2 = 0;
+	configuration.count_color_3 = 0;
 	
-	getHTTPObject();
-	
-	if (elem("captureColor"))
-		parameters = "DoCaptureColor=" + elem("captureColor").checked;
-	
-	xmlHttp.open('POST', '/cgi-bin/leanxsugus.cgi', true);
-	xmlHttp.onreadystatechange = useHttpResponse;
-	xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-//	xmlHttp.setRequestHeader("Content-length", parameters.length);
-//	xmlHttp.setRequestHeader("Connection", "close");
-	xmlHttp.send(parameters);
-}
-
-function useHttpResponse() {
-	if (xmlHttp.readyState == 4) {
-		var response = xmlHttp.responseText.split('\n');
-		var i = 0;
-		var arg;
-		var argSplit;
-		
-		// Separate the different parameters of the response.
-		while (response[i]) {
-			// Separate parameter name and parameter value
-			arg = response[i];
-			argSplit = arg.split('=');
-			
-			// Depending on the parameter name, invoke a different action.
-			switch (argSplit[0]) {
-			case "imgTS":
-				elem("camimage").src = "/image.bmp?" + argSplit[1];
-			/*	if (elem("camimage"))
-					elem("camimage").src = "/img.bmp?" + argSplit[1];
-				else
-					window.location="index.html";
-				break; */
-			default:
-				// Something unexpected received. This may happen if the application has shut down. So redirect to status off.
-			//	window.location = "index.html";
-				setTimeout("updateData()", 500);
-				return;
-			}
-			
-			i += 1;
-		}
-		setTimeout("updateData()", 1);
-	}
+	configuration.count_sorted = 0;
+	configuration.count_total = 0;
 }
 
 function configBool_toggle(name) {
-	window[name] = ! window[name];
-	sendConfig(name, window[name]);
+	configuration[name] = ! configuration[name];
+	sendConfig(name, configuration[name]);
+	
+	readConfig();
 }
 
 function configUnit_insist(name) {
@@ -104,14 +67,63 @@ function configUnit_insist(name) {
 }
 
 function sendConfig(name, value) {
-	var message = name;
+	var message;
 	var xmlHttp = getHTTPObject();
 	
-	if (value)
-		message += "=" + value;
+	if (value == null)
+		message = name + "\n";
+	else
+		message = name + "=" + value + "\n";
 	
-	xmlHttp.open('POST', 'http://cgi-bin/config.cgi', false);
+//	xmlHttp.open('POST', 'http://localhost:1234/cgi-bin/config.cgi', true);
+	xmlHttp.open('POST', '/cgi-bin/config.cgi', true);
 	xmlHttp.setRequestHeader("Content-length", message.length);
-	xmlHttp.setRequestHeader("Connection", "close");
 	xmlHttp.send(message);
+}
+
+function updateConfig() {
+	var xmlHttp = getHTTPObject();
+	
+	function process() {
+		if (xmlHttp.readyState == 4) {
+			var vars = xmlHttp.responseText.split("\n");
+			
+			for (var i in vars) {
+				var ii = vars[i].split("=");
+				
+				configuration[ii[0]] = ii[1];
+			}
+			
+			readConfig();
+		}
+	}
+	
+	xmlHttp.open('GET', '/statistics.txt', true);
+	xmlHttp.onreadystatechange = process;
+	xmlHttp.send("");
+	
+	setTimeout("updateConfig();", 500);
+}
+
+function readConfig() {
+	var classes = new Object;
+	classes[false] = "inaktiv";
+	classes["false"] = "inaktiv";
+	classes[true] = "aktiv";
+	classes["true"] = "aktiv";
+	
+//	setElementText("title", configuration.sort_color_0);
+	
+	setElementClass("sort_color_0", classes[configuration.sort_color_0]);
+	setElementClass("sort_color_1", classes[configuration.sort_color_1]);
+	setElementClass("sort_color_2", classes[configuration.sort_color_2]);
+	setElementClass("sort_color_3", classes[configuration.sort_color_3]);
+	
+	setElementText("count_color_0", configuration.count_color_0);
+	setElementText("count_color_1", configuration.count_color_1);
+	setElementText("count_color_2", configuration.count_color_2);
+	setElementText("count_color_3", configuration.count_color_3);
+	
+	setElementText("count_sorted", configuration.count_sorted);
+	setElementText("count_total", configuration.count_color_0 + configuration.count_color_1 + configuration.count_color_2 + configuration.count_color_3);
 }

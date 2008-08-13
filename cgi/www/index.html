@@ -1,15 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de">
 	<head>
 		<title>LeanXsugus WebGUI</title>
 		<link rel="stylesheet" type="text/css" href="styles.css" />
-		<script src="functions.js" type="text/javascript" />
-		<base href="http://192.168.11.28/" />
+		<script src="functions.js" type="text/javascript"></script>
 	</head>
 	<body onload="onLoad();">
-		<div class="title">
+		<div id="title" class="title">
 			LeanXsugus
 		</div>
 		<table class="table">
@@ -21,48 +20,48 @@
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_0');">
 				<td>
-					<div class="swatch" style="background-color: #0d0; border-color: #070; " />
+					<div class="swatch" style="background-color: #0d0; border-color: #070;"></div>
 				</td>
 				<td>Grüne Sugus</td>
-				<td>0</td>
-				<td class="aktiv" id="sort-green">Aussortieren</td>
+				<td id="count_color_0">0</td>
+				<td id="sort_color_0" class="inaktiv">Aussortieren</td>
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_1');">
 				<td>
-					<div class="swatch" style="background-color: #ff0; border-color: #ec0;" />
+					<div class="swatch" style="background-color: #ff0; border-color: #ec0;"></div>
 				</td>
 				<td>Gelbe Sugus</td>
-				<td>0</td>
-				<td class="aktiv" id="sort-yellow">Aussortieren</td>
+				<td id="count_color_1">0</td>
+				<td id="sort_color_1" class="inaktiv">Aussortieren</td>
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_2');">
 				<td>
-					<div class="swatch" style="background-color: #fa0; border-color: #b60;" />
+					<div class="swatch" style="background-color: #fa0; border-color: #b60;"></div>
 				</td>
 				<td>Orange Sugus</td>
-				<td>0</td>
-				<td class="aktiv" id="sort-orange">Aussortieren</td>
+				<td id="count_color_2">0</td>
+				<td id="sort_color_2" class="inaktiv">Aussortieren</td>
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_3');">
 				<td>
-					<div class="swatch" style="background-color: #f00; border-color: #800;" />
+					<div class="swatch" style="background-color: #f00; border-color: #800;"></div>
 				</td>
 				<td>Rote Sugus</td>
-				<td>0</td>
-				<td class="aktiv" id="sort-red">Aussortieren</td>
+				<td id="count_color_3">0</td>
+				<td id="sort_color_3" class="inaktiv">Aussortieren</td>
 			</tr>
 			<tr class="footer">
-				<td/>
+				<td></td>
 				<td class="footer">Aussortiert</td>
-				<td>0</td>
+				<td id="count_sorted">0</td>
 				<td rowspan="2" onclick="configUnit_insist('reset_counter');">
 					Zurücksetzen
 				</td>
 			</tr>
 			<tr class="footer">
-				<td/>
+				<td></td>
 				<td class="footer">Gesamt</td>
-				<td>0</td>
+				<td id="count_total">0</td>
 			</tr>
 		</table>
 	</body>
