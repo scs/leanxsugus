@@ -94,9 +94,21 @@ function useHttpResponse() {
 	}
 }
 
+function configBool_toggle(name) {
+	window[name] = ! window[name];
+	sendConfig(name, window[name]);
+}
+
+function configUnit_insist(name) {
+	sendConfig(name);
+}
+
 function sendConfig(name, value) {
-	var message = name + "=" + value;
+	var message = name;
 	var xmlHttp = getHTTPObject();
+	
+	if (value)
+		message += "=" + value;
 	
 	xmlHttp.open('POST', 'http://cgi-bin/config.cgi', false);
 	xmlHttp.setRequestHeader("Content-length", message.length);

@@ -1,2 +1,2 @@
 #! /bin/msh
-cat > /tmp/leanxsugus-config
+[ -p /tmp/leanxsugus-config ] && cat > /tmp/leanxsugus-config
