@@ -1,4 +1,5 @@
 var configuration = new Object;
+var statistics = new Object;
 
 function setElementText(id, text) {
 	document.getElementById(id).firstChild.nodeValue = text
@@ -8,6 +9,7 @@ function setElementClass(id, name) {
 	document.getElementById(id).className = name
 }
 
+/* This function does some magic to get an XMLHttpRequest object even in some archaic browsers. */
 function getHTTPObject() {
 	var xmlHttp;
 	
@@ -37,7 +39,10 @@ function getHTTPObject() {
 
 function onLoad() {
 	initConfig();
-	updateConfig();
+	initStatistics();
+	
+	updateInterface();
+	getStatistics();
 }
 
 function initConfig() {
@@ -46,20 +51,26 @@ function initConfig() {
 	configuration.sort_color_2 = false;
 	configuration.sort_color_3 = false;
 	
-	configuration.count_color_0 = 0;
-	configuration.count_color_1 = 0;
-	configuration.count_color_2 = 0;
-	configuration.count_color_3 = 0;
-	
-	configuration.count_sorted = 0;
-	configuration.count_total = 0;
+	sendConfig("sort_color_0", false);
+	sendConfig("sort_color_1", false);
+	sendConfig("sort_color_2", false);
+	sendConfig("sort_color_3", false);
+	sendConfig("reset_counter");
+}
+
+function initStatistics() {
+	statistics.count_color_0 = 0;
+	statistics.count_color_1 = 0;
+	statistics.count_color_2 = 0;
+	statistics.count_color_3 = 0;
+	statistics.count_sorted = 0;
 }
 
 function configBool_toggle(name) {
 	configuration[name] = ! configuration[name];
-	sendConfig(name, configuration[name]);
 	
-	readConfig();
+	sendConfig(name, configuration[name]);
+	updateInterface();
 }
 
 function configUnit_insist(name) {
@@ -75,15 +86,13 @@ function sendConfig(name, value) {
 	else
 		message = name + "=" + value + "\n";
 	
-//	xmlHttp.open('POST', 'http://localhost:1234/cgi-bin/config.cgi', true);
 	xmlHttp.open('POST', '/cgi-bin/config.cgi', true);
 	xmlHttp.setRequestHeader("Content-length", message.length);
 	xmlHttp.send(message);
 }
 
-function updateConfig() {
+function getStatistics() {
 	var xmlHttp = getHTTPObject();
-	
 	function process() {
 		if (xmlHttp.readyState == 4) {
 			var vars = xmlHttp.responseText.split("\n");
@@ -91,10 +100,10 @@ function updateConfig() {
 			for (var i in vars) {
 				var ii = vars[i].split("=");
 				
-				configuration[ii[0]] = ii[1];
+				statistics[ii[0]] = ii[1];
 			}
 			
-			readConfig();
+			updateInterface();
 		}
 	}
 	
@@ -102,28 +111,31 @@ function updateConfig() {
 	xmlHttp.onreadystatechange = process;
 	xmlHttp.send("");
 	
-	setTimeout("updateConfig();", 500);
+	setTimeout("getStatistics();", 500);
 }
 
-function readConfig() {
+function updateInterface() {
 	var classes = new Object;
-	classes[false] = "inaktiv";
-	classes["false"] = "inaktiv";
-	classes[true] = "aktiv";
-	classes["true"] = "aktiv";
+	var count_total = 0;
 	
-//	setElementText("title", configuration.sort_color_0);
+	classes[false] = "inaktiv";
+	classes[true] = "aktiv";
 	
 	setElementClass("sort_color_0", classes[configuration.sort_color_0]);
 	setElementClass("sort_color_1", classes[configuration.sort_color_1]);
 	setElementClass("sort_color_2", classes[configuration.sort_color_2]);
 	setElementClass("sort_color_3", classes[configuration.sort_color_3]);
 	
-	setElementText("count_color_0", configuration.count_color_0);
-	setElementText("count_color_1", configuration.count_color_1);
-	setElementText("count_color_2", configuration.count_color_2);
-	setElementText("count_color_3", configuration.count_color_3);
+	setElementText("count_color_0", statistics.count_color_0);
+	setElementText("count_color_1", statistics.count_color_1);
+	setElementText("count_color_2", statistics.count_color_2);
+	setElementText("count_color_3", statistics.count_color_3);
 	
-	setElementText("count_sorted", configuration.count_sorted);
-	setElementText("count_total", configuration.count_color_0 + configuration.count_color_1 + configuration.count_color_2 + configuration.count_color_3);
+	count_total += parseInt(statistics.count_color_0, 10)
+	count_total += parseInt(statistics.count_color_1, 10)
+	count_total += parseInt(statistics.count_color_2, 10)
+	count_total += parseInt(statistics.count_color_3, 10)
+	
+	setElementText("count_sorted", statistics.count_sorted);
+	setElementText("count_total", count_total);
 }
