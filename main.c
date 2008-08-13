@@ -127,7 +127,7 @@ OSC_ERR Unload()
 
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 
-uint8 frameBuffers[2][OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
+uint8 frameBuffer[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
 
 OSC_ERR mainLoop () {
 	OSC_ERR err = SUCCESS;
@@ -146,18 +146,18 @@ OSC_ERR mainLoop () {
 		return err;
 	}
 	
-	err = OscCamSetFrameBuffer(0, sizeof frameBuffers[0], frameBuffers[0], TRUE);
+	err = OscCamSetFrameBuffer(0, sizeof frameBuffer, frameBuffer, TRUE);
 	if (err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n", __func__);
 		return err;
 	}
 	
+	valves_handleValves();
+	
 	loop {
 		uint8 * pFrameBuffer;
 		t_time capture_time;
-		
-		valves_handleValves();
 		
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)

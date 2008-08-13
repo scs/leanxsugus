@@ -33,7 +33,7 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	t_index const ahead_end = (end_time - valves.next_time) / INTERVAL + 1;
 	t_index i, j;
 	
-//	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
+	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
 	
 	assert (begin_time >= valves.next_time);
 	assert (end_time >= begin_time);
@@ -57,7 +57,7 @@ void valves_handleValves() {
 	else
 	{
 		uint16 const behind = OscSupCycToMicroSecs(-sleep_time);
-		if (behind > 3000)
+		if (behind > 1000)
 			printf("Behind by %d ms!\n", behind / 1000);
 	}
 	

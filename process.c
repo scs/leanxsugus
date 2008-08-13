@@ -575,10 +575,6 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	}
 }
 
-void writeNiceDebugPictureHalfSize(uint8 const * const pRawImg, t_index const width, t_index const height, uint8 * const pOut) {
-	
-}
-
 /* Adjusts the valves so they fire when the object is in front of them. */
 void insertIntoValves(struct object * pObj, t_time capture_time)
 {
@@ -614,16 +610,11 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 	
 benchmark_init;
 	
-	err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
-	if(err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Error getting bayer order! (%d)\n", __func__, err);
-		return;
-	}
-	
 	err = OscVisDebayerGreyscaleHalfSize(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgGrey);
 
 benchmark_delta;
+	
+	valves_handleValves();
 
 	{
 		struct object * objs = findObjects(thresholdValue), * obj;
@@ -668,5 +659,10 @@ benchmark_delta;
 }
 
 void process_init() {
-//	segmentArrays_init ();
+	OSC_ERR err = OscCamGetBayerOrder(&data.enBayerOrder, 0, 0);
+	if(err != SUCCESS)
+	{
+		OscLog(ERROR, "%s: Error getting bayer order! (%d)\n", __func__, err);
+		return;
+	}
 }
