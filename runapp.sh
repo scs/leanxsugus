@@ -1,5 +1,8 @@
 #! /bin/msh
 
+# Kill all stray process instances.
+killall leanxsugus 2> /dev/null
+
 # Construct a fifo that will be used by the application to recieve configuration commands.
 echo "Setting up the configuration fifo..."
 if [ ! -p /tmp/leanxsugus-config ]; then
