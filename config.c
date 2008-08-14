@@ -113,11 +113,12 @@ void config_read()
 		
 		if (strcmp(buf, "reset_counter") == 0)
 		{
-			
 			configuration.count_color[0] = 0;
 			configuration.count_color[1] = 0;
 			configuration.count_color[2] = 0;
 			configuration.count_color[3] = 0;
+			
+			configuration.count_sorted = 0;
 		}
 	}
 }
