@@ -8,7 +8,7 @@
 		<script src="functions.js" type="text/javascript"></script>
 	</head>
 	<body onload="onLoad();">
-		<div id="title" class="title">
+		<div class="title">
 			LeanXsugus
 		</div>
 		<table class="table">
@@ -16,11 +16,11 @@
 				<td style="width: 40px;"></td>
 				<td style="width: 320px;">Farbe</td>
 				<td style="width: 100px;">Zähler</td>
-				<td style="width: 150px;">Aktion</td>
+				<td style="width: 150px;" class="inaktiv">Aktion</td>
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_0');">
 				<td>
-					<div class="swatch" style="background-color: #0d0; border-color: #070;"></div>
+					<div class="swatch" style="background-color: #0c0; border-color: #090;"></div>
 				</td>
 				<td>Grüne Sugus</td>
 				<td id="count_color_0">0</td>
@@ -28,7 +28,7 @@
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_1');">
 				<td>
-					<div class="swatch" style="background-color: #ff0; border-color: #ec0;"></div>
+					<div class="swatch" style="background-color: #ff0; border-color: #ba0;"></div>
 				</td>
 				<td>Gelbe Sugus</td>
 				<td id="count_color_1">0</td>
@@ -44,7 +44,7 @@
 			</tr>
 			<tr onclick="configBool_toggle('sort_color_3');">
 				<td>
-					<div class="swatch" style="background-color: #f00; border-color: #800;"></div>
+					<div class="swatch" style="background-color: #f00; border-color: #900;"></div>
 				</td>
 				<td>Rote Sugus</td>
 				<td id="count_color_3">0</td>
@@ -54,7 +54,7 @@
 				<td></td>
 				<td class="footer">Aussortiert</td>
 				<td id="count_sorted">0</td>
-				<td rowspan="2" onclick="configUnit_insist('reset_counter');">
+				<td rowspan="2" onclick="configUnit_insist('reset_counter');" style="padding-bottom: 18px" class="aktiv">
 					Zurücksetzen
 				</td>
 			</tr>

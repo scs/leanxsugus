@@ -4,8 +4,8 @@ body {
 }
 
 .title {
-	margin-top: 40px;
-	margin-bottom: 40px;
+	margin-top: 45px;
+	margin-bottom: 45px;
 	text-align: center;
 	font-size: 36px;
 	font-weight: bold;
@@ -64,11 +64,8 @@ body {
 	border-width: 2px;
 }
 
-.button {
-	padding: 10px;
-	border-style: outset;
-	border-width: 3px;
-	border-color: red;
+.aktiv {
+	background-color: #bbb;
 }
 
 .aktiv#sort_color_0 {
@@ -76,11 +73,11 @@ body {
 }
 
 .aktiv#sort_color_1 {
-	color: #fd0;
+	color: #ff0;
 }
 
 .aktiv#sort_color_2 {
-	color: #f70;
+	color: #f80;
 }
 
 .aktiv#sort_color_3 {
@@ -88,7 +85,8 @@ body {
 }
 
 .inaktiv {
-	color: #aaa;
+	background-color: #bbb;
+	color: #fff;
 }
 
 .big-box {
