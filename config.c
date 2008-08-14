@@ -71,7 +71,7 @@ void config_read()
 	if (ret == NULL) {
 		if (feof(file))
 		{ /* There was no data available in the pipe. */
-			printf("No commands availible...\n");
+		//	printf("No commands availible...\n");
 			
 			fclose(file);
 			close(fd);
@@ -82,18 +82,17 @@ void config_read()
 		
 		if (errno == EAGAIN)
 		{ /* There is data, but not a complete line. */
-			printf("Waiting for a complete line...\n");
+		//	printf("Waiting for a complete line...\n");
 			return;
 		}
 	}
 	
-	/* Find the equals sign. */
-	pos = strstr(buf, "=");
+	buf[strlen(buf) - 1] = 0; /* Remove the trailing newline. */
+	pos = strstr(buf, "="); /* Find the equals sign. */
 	
 	/* Test if there was an equals sign in the line */
 	if (pos != NULL)
 	{
-		buf[strlen(buf) - 1] = 0; /* Remove the trailing newline. */
 		*pos = 0; /* End the first part of the line. */
 		pos += 1; /* Move into the second part of the string. */
 		
@@ -109,13 +108,18 @@ void config_read()
 			configuration.sort_color[3] = strcmp(pos, "true") == 0;
 	}
 	else
+	{
+		printf("%s\n", buf);
+		
 		if (strcmp(buf, "reset_counter") == 0)
 		{
+			
 			configuration.count_color[0] = 0;
 			configuration.count_color[1] = 0;
 			configuration.count_color[2] = 0;
 			configuration.count_color[3] = 0;
 		}
+	}
 }
 
 void config_init() {
