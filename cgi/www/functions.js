@@ -37,7 +37,35 @@ function getHTTPObject() {
 	return xmlHttp;
 }
 
+function disableSelectionEverywhere() {
+	function allNodes(elem) {
+		var nodes = new Array(elem);
+		
+		for (var i in elem.childNodes)
+			nodes = nodes.concat(allNodes(elem.childNodes[i]));
+		
+		return nodes;
+	}
+	
+	function disableSelection(element) {
+		try {
+			element.onselectstart = function() {
+				return false;
+			};
+			element.unselectable = "on";
+			element.style.MozUserSelect = "none";
+		} catch (e) { }
+	}
+	
+	var nodes = allNodes(document);
+	
+	for (var i in nodes)
+		disableSelection(nodes[i]);
+}
+
 function onLoad() {
+	disableSelectionEverywhere();
+	
 	initConfig();
 	initStatistics();
 	
@@ -51,11 +79,11 @@ function initConfig() {
 	configuration.sort_color_2 = false;
 	configuration.sort_color_3 = false;
 	
+	sendConfig("reset_counter");
 	sendConfig("sort_color_0", false);
 	sendConfig("sort_color_1", false);
 	sendConfig("sort_color_2", false);
 	sendConfig("sort_color_3", false);
-	sendConfig("reset_counter");
 }
 
 function initStatistics() {

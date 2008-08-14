@@ -1,3 +1,7 @@
+html {
+	cursor: none;
+}
+
 body {
 	font-family: sans-serif;
 	margin: 0;
