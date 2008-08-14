@@ -159,11 +159,12 @@ OSC_ERR mainLoop () {
 		uint8 * pFrameBuffer;
 		t_time capture_time;
 		
+	retry:
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to trigger the capture (%d)!\n", __func__, err);
-			return err;
+			goto retry;
 		}
 		capture_time = OscSupCycGet();
 				
