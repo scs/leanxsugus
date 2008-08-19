@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include "config.h"
 
@@ -30,12 +31,10 @@ void config_write()
 	file = fdopen(fd, "w");
 	
 	for (i = 0; i < 4; i += 1)
-	{
-		fprintf(file, "sort_color_%d=%s\n", i, configuration.sort_color[i] ? "true" : "false");
-		fprintf(file, "count_color_%d=%d\n", i, configuration.count_color[i]);
-	}
+		fprintf(file, "count_color_%d=%ld\n", i, configuration.count_color[i]);
 	
-	fprintf(file, "count_sorted=%d\n", configuration.count_sorted);
+	fprintf(file, "count_sorted=%ld\n", configuration.count_sorted);
+	fprintf(file, "count_unknown=%ld\n", configuration.count_unknown);
 	
 	fclose(file);
 	close(fd);
@@ -98,14 +97,27 @@ void config_read()
 		
 		printf("%s = %s\n", buf, pos);
 		
-		if (strcmp(buf, "sort_color_0") == 0)
-			configuration.sort_color[0] = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color_1") == 0)
-			configuration.sort_color[1] = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color_2") == 0)
-			configuration.sort_color[2] = strcmp(pos, "true") == 0;
-		else if (strcmp(buf, "sort_color_3") == 0)
-			configuration.sort_color[3] = strcmp(pos, "true") == 0;
+		if (strncmp(buf, "sort_color_", 11) == 0)
+		{
+			t_index n = atoi(buf + 11);
+			
+			if (0 <= n && n < 4)
+				configuration.sort_color[n] = strcmp(pos, "true") == 0;
+		}
+		
+		if (strcmp(buf, "sort_unknown") == 0)
+			configuration.sort_unknown = strcmp(pos, "true") == 0;
+		
+		if (strncmp(buf, "valve_override_", 15) == 0)
+		{
+			t_index n = atoi(buf + 15);
+			
+			if (0 <= n && n < 16)
+				configuration.valve_override[n] = strcmp(pos, "true") == 0;
+		}
+		
+		if (strcmp(buf, "calibrating") == 0)
+			configuration.calibrating = strcmp(pos, "true") == 0;
 	}
 	else
 	{

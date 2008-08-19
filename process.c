@@ -40,9 +40,8 @@ typedef enum {
 	e_classification_sugusGreen,
 	e_classification_sugusOrange,
 	e_classification_sugusYellow,
-	e_classification_otherColor,
+	e_classification_unknown,
 	e_classification_tooSmall,
-	e_classification_tooNearToBorder
 } e_classification;
 
 typedef struct {
@@ -422,9 +421,9 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 					else
 						obj->classification = e_classification_sugusYellow;
 				else
-					obj->classification = e_classification_otherColor;
+					obj->classification = e_classification_unknown;
 			else
-				obj->classification = e_classification_otherColor;
+				obj->classification = e_classification_unknown;
 		}
 	}
 }
@@ -518,10 +517,6 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	{
 		s_color const green = { 0, ~0, 0 }, red = { 0, 0, ~0 }, black = { 0, 0, 0 },
 			white = { ~0, ~0, ~0 };
-		
-		/* Objects that are too near to the border. */
-		if (obj->classification == e_classification_tooNearToBorder)
-			continue;
 		
 		/* Objects that are too small. */
 		if (obj->classification == e_classification_tooSmall)
@@ -620,7 +615,9 @@ benchmark_delta;
 		struct object * objs = findObjects(thresholdValue), * obj;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
-	//	writeNiceDebugPicture(pRawImg, objs, 8);
+		
+		if (configuration.calibrating)
+			writeNiceDebugPicture(pRawImg, objs, 8);
 	
 	benchmark_delta;	
 		
@@ -655,13 +652,16 @@ benchmark_delta;
 					configuration.count_color[3] += 1;
 				}
 				
-				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3])
+				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
 				{
 				//	printf(" -> sorted...\n");
 					insertIntoValves(obj, capture_time);
 					
 					configuration.count_sorted += 1;
 				}
+				
+				if (obj->classification == e_classification_unknown)
+					configuration.count_unknown += 1;
 			//	else
 				//	printf("\n");
 			}

@@ -6,6 +6,7 @@
 
 #include "valves.h"
 #include "modbus.h"
+#include "config.h"
 
 /* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
 #define TUNE_VALVES_ON ((int32) CPU_FREQ / 1000 * -20)
@@ -52,6 +53,9 @@ void valves_handleValves() {
 	t_index i;
 	uint16 valves_out = 0;
 	
+	if (configuration.calibrating)
+		return;
+	
 	if (sleep_time > 0)
 		usleep(OscSupCycToMicroSecs(sleep_time));
 	else
@@ -66,7 +70,7 @@ void valves_handleValves() {
 	for (i = 0; i < 16; i += 1)
 	{
 		valves_out <<= 1;
-		if (valves.values[valves.next_values][i])
+		if (valves.values[valves.next_values][i] || configuration.valve_override[i])
 			valves_out |= 0x0001;
 		valves.values[valves.next_values][i] = false;
 	}
