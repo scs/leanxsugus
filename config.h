@@ -3,11 +3,14 @@
 
 #include "support.h"
 
-
 struct {
 	bool sort_color[4];
-	int count_color[4];
-	int count_sorted;
+	bool sort_unknown;
+	int32 count_color[4];
+	int32 count_sorted;
+	int32 count_unknown;
+	bool calibrating;
+	bool valves_override[16];
 } configuration;
 
 void config_write();
