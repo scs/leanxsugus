@@ -13,6 +13,7 @@
 #endif
 
 #define m printf("%s: Line %d\n", __func__, __LINE__);
+#define p(n) printf("%s: Line %d: %s: %d\n", __func__, __LINE__ , #n, n);
 
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
@@ -613,18 +614,27 @@ void removeDuplicates(struct object * const from, struct object const * const wi
 {
 	struct object * obj1;
 	struct object const * obj2;
-	t_index const posDelta = timeDelta * (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) / HEIGHT_CAPTURE;
+	t_index const posDelta = (timeDelta >> 8) * HEIGHT_CAPTURE / ((TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) >> 8); // We need to gain some space so the numbers don't get too big, there is probably a better way to do this...
+	
+//	p(timeDelta);
+//	p(posDelta);
 	
 	for (obj1 = from; obj1 != NULL; obj1 = obj1->pNext)
 		for (obj2 = with; obj2 != NULL; obj2 = obj2->pNext)
 		{
-			t_index const xDist = obj2->posWghtX - obj1->posWghtY;
-			t_index const yDist = obj2->posWghtX - obj1->posWghtY - posDelta;
+			t_index const xDist = obj2->posWghtX - obj1->posWghtX;
+			t_index const yDist = obj2->posWghtY - obj1->posWghtY + posDelta;
 			uint32 dist = (uint32) xDist * xDist + yDist * yDist;
+			
+			printf("obj1: (%d, %d), ", obj1->posWghtX, obj1->posWghtY);
+			printf("obj2: (%d, %d), ", obj2->posWghtX, obj2->posWghtY);
+			printf("dist: (%d, %d)\n", xDist, yDist);
+			p(dist);
 			
 			if (dist < maxDistSqr)
 			{
 				obj1->classification = e_classification_duplicate;
+				printf("Duplicate object removed!\n");
 			}
 		}
 }
@@ -652,8 +662,8 @@ benchmark_delta;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
-		/* if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 50 * 50); */
+		if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 100 * 100);
 		last_capture_time = capture_time;
 		
 		if (configuration.calibrating)
