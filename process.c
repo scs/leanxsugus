@@ -12,6 +12,8 @@
 #define IMG_FILENAME "/home/httpd/image.bmp"
 #endif
 
+#define m printf("%s: Line %d\n", __func__, __LINE__);
+
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
 
@@ -53,7 +55,7 @@ typedef struct {
 	struct segment {
 		t_index begin, end;
 		struct object * pObject;
-	} segments[1000];
+	} segments[100];
 	
 	t_index numSegments;
 } s_segmentArray;
@@ -66,27 +68,27 @@ typedef struct {
 		s_color color;
 		e_classification classification;
 		struct object * pPrev, * pNext;
-	} objects[1000];
+	} objects[100];
 	
 	struct object * pFirst[3];
 } s_objectPool;
 
 s_objectPool objPool;
 
-/* void objectPool_dump(struct aObject const * const pPool)
+void objectPool_dump(s_objectPool const * const pPool)
 {
-	uint8 i;
+	t_index i;
 	
-	printf("pFirstInactive: %d\n", pPool->pFirstInactive - (pPool->objects));
-	printf("pFirstActive: %d\n", pPool->pFirstActive - (pPool->objects));
+	for (i = 0; i < length (pPool->pFirst); i += 1)
+		printf("pFirst[%d]: %ld\n", i, pPool->pFirst[i] - (pPool->objects));
 	
-	for (i = 0; i < OBJECT_POOL_COUNT; i += 1)
+	for (i = 0; i < length(pPool->objects); i += 1)
 	{
-		printf("%u: %d, %d\n", i,
+		printf("%u: %ld, %ld\n", i,
 			pPool->objects[i].pPrev - (pPool->objects),
 			pPool->objects[i].pNext - (pPool->objects));
 	}
-} */
+}
 
 /* initializes the object pool to a state where all objects are inactive */
 void objectPool_init (s_objectPool * const pPool)
@@ -106,7 +108,7 @@ void objectPool_init (s_objectPool * const pPool)
 	}
 	
 	pPool->objects[0].pPrev = NULL;
-	pPool->objects[length (pPool->objects) - 1].pNext = NULL;
+	pPool->objects[length(pPool->objects) - 1].pNext = NULL;
 }
 
 void objectPool_move (s_objectPool * const pPool, struct object * const pObj, t_index from, t_index to)
@@ -243,12 +245,12 @@ struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 	
 	static s_segmentArray segArrs[2];
 	s_segmentArray * segsLast = segArrs, * segsCurr = segArrs + 1;
-	struct object * temp;
 	
-	for (temp = pPool->pFirst[2]; temp != NULL; temp = temp->pNext)
-		objectPool_move (pPool, temp, 1, 0);
+	while (pPool->pFirst[2] != NULL)
+		objectPool_move (pPool, pPool->pFirst[2], 2, 0);
 	
 	assert(pPool->pFirst[2] == NULL);
+//m	objectPool_dump(pPool);
 	
 	pPool->pFirst[2] = pPool->pFirst[1];
 	pPool->pFirst[1] = NULL;
@@ -646,10 +648,12 @@ benchmark_delta;
 		struct object * objs = findObjects(&objPool, thresholdValue), * obj;
 		static t_time last_capture_time = 0;
 		
+	//m	objectPool_dump(&objPool);
+		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
-		if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 50 * 50);
+		/* if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 50 * 50); */
 		last_capture_time = capture_time;
 		
 		if (configuration.calibrating)
@@ -716,5 +720,6 @@ void process_init() {
 		return;
 	}
 	
-	objectPool_init (&objPool);
+	objectPool_init(&objPool);
+//m	objectPool_dump(&objPool);
 }
