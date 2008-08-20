@@ -42,6 +42,7 @@ typedef enum {
 	e_classification_sugusYellow,
 	e_classification_unknown,
 	e_classification_tooSmall,
+	e_classification_duplicate,
 } e_classification;
 
 typedef struct {
@@ -67,8 +68,10 @@ typedef struct {
 		struct object * pPrev, * pNext;
 	} objects[1000];
 	
-	struct object * pFirst[2];
+	struct object * pFirst[3];
 } s_objectPool;
+
+s_objectPool objPool;
 
 /* void objectPool_dump(struct aObject const * const pPool)
 {
@@ -178,7 +181,7 @@ void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * 
  * @param value The value to be considered part of an object.
  * @return A pointer to the object array.
  */
-struct object * findObjects(uint8 const value) {
+struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 	struct object * createObjectForSegment(t_index line, struct segment * pSeg, s_objectPool * pObjPool)
 	{
 		struct object * obj = pObjPool->pFirst[0];
@@ -238,12 +241,20 @@ struct object * findObjects(uint8 const value) {
 	t_index i;
 	t_index iLast, iCurrent;
 	
-	static s_objectPool objPool;
 	static s_segmentArray segArrs[2];
 	s_segmentArray * segsLast = segArrs, * segsCurr = segArrs + 1;
+	struct object * temp;
+	
+	for (temp = pPool->pFirst[2]; temp != NULL; temp = temp->pNext)
+		objectPool_move (pPool, temp, 1, 0);
+	
+	assert(pPool->pFirst[2] == NULL);
+	
+	pPool->pFirst[2] = pPool->pFirst[1];
+	pPool->pFirst[1] = NULL;
 	
 	/* This marks all objects as inactive. */
-	objectPool_init(&objPool);
+//	objectPool_init(&objPool);
 	
 	segsCurr->numSegments = 0;
 	
@@ -596,6 +607,26 @@ void insertIntoValves(struct object * pObj, t_time capture_time)
 	valves_insertEvent(capture_time + time_bottom, capture_time + time_top, valve_begin, valve_end);
 }
 
+void removeDuplicates(struct object * const from, struct object const * const with, t_time const timeDelta, uint32 const maxDistSqr)
+{
+	struct object * obj1;
+	struct object const * obj2;
+	t_index const posDelta = timeDelta * (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) / HEIGHT_CAPTURE;
+	
+	for (obj1 = from; obj1 != NULL; obj1 = obj1->pNext)
+		for (obj2 = with; obj2 != NULL; obj2 = obj2->pNext)
+		{
+			t_index const xDist = obj2->posWghtX - obj1->posWghtY;
+			t_index const yDist = obj2->posWghtX - obj1->posWghtY - posDelta;
+			uint32 dist = (uint32) xDist * xDist + yDist * yDist;
+			
+			if (dist < maxDistSqr)
+			{
+				obj1->classification = e_classification_duplicate;
+			}
+		}
+}
+
 void process(uint8 const * const pRawImg, t_time capture_time)
 {
 	OSC_ERR err;
@@ -612,9 +643,14 @@ benchmark_delta;
 	valves_handleValves();
 
 	{
-		struct object * objs = findObjects(thresholdValue), * obj;
+		struct object * objs = findObjects(&objPool, thresholdValue), * obj;
+		static t_time last_capture_time = 0;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
+		
+		if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 50 * 50);
+		last_capture_time = capture_time;
 		
 		if (configuration.calibrating)
 			writeNiceDebugPicture(pRawImg, objs, 8);
@@ -679,4 +715,6 @@ void process_init() {
 		OscLog(ERROR, "%s: Error getting bayer order! (%d)\n", __func__, err);
 		return;
 	}
+	
+	objectPool_init (&objPool);
 }
