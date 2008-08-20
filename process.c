@@ -44,7 +44,7 @@ typedef enum {
 	e_classification_sugusYellow,
 	e_classification_unknown,
 	e_classification_tooSmall,
-	e_classification_duplicate,
+	e_classification_duplicate
 } e_classification;
 
 typedef struct {

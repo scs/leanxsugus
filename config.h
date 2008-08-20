@@ -10,7 +10,7 @@ struct {
 	int32 count_sorted;
 	int32 count_unknown;
 	bool calibrating;
-	bool valves_override[16];
+	bool valve_override[16];
 } configuration;
 
 void config_write();

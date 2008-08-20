@@ -68,7 +68,7 @@ void valves_handleValves() {
 	for (i = 0; i < 16; i += 1)
 	{
 		valves_out <<= 1;
-		if (valves.values[valves.next_values][i] || configuration.valves_override[i])
+		if (valves.values[valves.next_values][i] || configuration.valve_override[i])
 			valves_out |= 0x0001;
 		valves.values[valves.next_values][i] = false;
 	}

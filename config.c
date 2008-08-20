@@ -101,19 +101,19 @@ void config_read()
 		{
 			t_index n = atoi(buf + 11);
 			
-			if (0 <= n && 4 < n)
+			if (0 <= n && n < 4)
 				configuration.sort_color[n] = strcmp(pos, "true") == 0;
 		}
 		
 		if (strcmp(buf, "sort_unknown") == 0)
 			configuration.sort_unknown = strcmp(pos, "true") == 0;
 		
-		if (strncmp(buf, "valves_override", 15) == 0)
+		if (strncmp(buf, "valve_override_", 15) == 0)
 		{
 			t_index n = atoi(buf + 15);
 			
-			if (0 <= n && 16 < n)
-				configuration.valves_override[n] = strcmp(pos, "true") == 0;
+			if (0 <= n && n < 16)
+				configuration.valve_override[n] = strcmp(pos, "true") == 0;
 		}
 		
 		if (strcmp(buf, "calibrating") == 0)
