@@ -2,6 +2,8 @@
 
 COLORS="red orange yellow green"
 
+mkdir -p normalized
+
 for i in $COLORS; do
 	cat "data/$i.txt" | cut -d " " -f 10 | grep -oE "[0-9]+" > "normalized/weight-$i.txt"
 	cat "data/$i.txt" | cut -d " " -f 12-14 | tr -dc '0-9 \n' > "normalized/color-$i.txt"
