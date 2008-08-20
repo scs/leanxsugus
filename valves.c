@@ -17,8 +17,6 @@
 /* This defines how many time steps ahead we can set a valve state */
 #define VALUES_AHEAD 10
 
-#define assert(a) if (!(a)) printf("%s: %s: Line %d: Assertion failed: %s\n", __FILE__, __func__, __LINE__, #a)
-
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 
 struct {
