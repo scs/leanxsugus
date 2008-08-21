@@ -29,7 +29,7 @@ struct {
 void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index const first_valve, t_index const last_valve)
 {
 	t_index const ahead_begin = (begin_time - valves.next_time) / INTERVAL;
-	t_index const ahead_end = (end_time - valves.next_time) / INTERVAL + 1;
+	t_index const ahead_end = (end_time - valves.next_time) / INTERVAL;
 	t_index i, j;
 	
 //	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);

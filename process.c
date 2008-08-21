@@ -529,7 +529,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	
 	for (obj = pObjs; obj != NULL; obj = obj->pNext)
 	{
-		s_color const green = { 0, ~0, 0 }, red = { 0, 0, ~0 }, black = { 0, 0, 0 },
+		s_color const green = { 0, ~0, 0 }, yellow = { 0, ~0, ~0 }, orange = { 0, ~0 >> 1, ~0 }, red = { 0, 0, ~0 }, black = { 0, 0, 0 },
 			white = { ~0, ~0, ~0 };
 		
 		/* Objects that are too small. */
@@ -542,13 +542,24 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 		}
 		
 		{
-			s_color const color = obj->color;
+		//	s_color const color = obj->color;
 			s_color colorFill, colorBorder;
 			int16 spotPosX, spotPosY;
+			s_color color;
+			
+			if (obj->classification = e_classification_sugusGreen)
+				color = green;
+			else if (obj->classification = e_classification_sugusYellow)
+				color = yellow;
+			else if (obj->classification = e_classification_sugusOrange)
+				color = orange;
+			else if (obj->classification = e_classification_sugusRed)
+				color = red;
+			else
+				color = black;
 			
 			drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
 			
-		//	colorFill = saturate(color);
 			colorFill = color;
 			colorBorder = (color.red + color.green + color.blue) > (255 * 3 / 2) ? black : white;
 			
@@ -657,6 +668,7 @@ benchmark_delta;
 	{
 		struct object * objs = findObjects(&objPool, thresholdValue), * obj;
 		static t_time last_capture_time = 0;
+		bool has_object = false;
 		
 	//m	objectPool_dump(&objPool);
 		
@@ -665,9 +677,6 @@ benchmark_delta;
 		if (last_capture_time != 0)
 			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 100 * 100);
 		last_capture_time = capture_time;
-		
-		if (configuration.calibrating)
-			writeNiceDebugPicture(pRawImg, objs, 8);
 	
 	benchmark_delta;	
 		
@@ -685,21 +694,30 @@ benchmark_delta;
 				{
 				//	printf("-> green");
 					configuration.count_color[0] += 1;
+					has_object = true;
 				}
 				else if (obj->classification == e_classification_sugusYellow)
 				{
 				//	printf("-> yellow");
 					configuration.count_color[1] += 1;
+					has_object = true;
 				}
 				else if (obj->classification == e_classification_sugusOrange)
 				{
 				//	printf("-> orange");
 					configuration.count_color[2] += 1;
+					has_object = true;
 				}
 				else if (obj->classification == e_classification_sugusRed)
 				{
 				//	printf("-> red");
 					configuration.count_color[3] += 1;
+					has_object = true;
+				}
+				else if (obj->classification == e_classification_unknown)
+				{
+					configuration.count_unknown += 1;
+					has_object = true;
 				}
 				
 				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
@@ -709,12 +727,12 @@ benchmark_delta;
 					
 					configuration.count_sorted += 1;
 				}
-				
-				if (obj->classification == e_classification_unknown)
-					configuration.count_unknown += 1;
 			//	else
 				//	printf("\n");
 			}
+		
+		if (configuration.calibrating || has_object != NULL)
+			writeNiceDebugPicture(pRawImg, objs, 8);
 			
 	benchmark_delta;
 	

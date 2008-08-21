@@ -16,7 +16,7 @@
 #include "valves.h"
 #include "main.h"
 
-#define BENCHMARK_ON
+//#define BENCHMARK_ON
 
 #ifdef BENCHMARK_ON
 uint32 benchmark_cyc;
@@ -140,7 +140,7 @@ OSC_ERR mainLoop () {
 	static uint8 frameBuffers[2][OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
 	uint8 multiBufferIds[] = { 0, 1 };
 	
-	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2, WIDTH_CAPTURE, HEIGHT_CAPTURE);
+	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2 - 50, WIDTH_CAPTURE, HEIGHT_CAPTURE);
 	if (err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Unable to set the area of interest!\n", __func__);
@@ -181,10 +181,10 @@ OSC_ERR mainLoop () {
 	
 	loop {
 		uint8 * pFrameBuffer;
-		t_time capture_time;
+		t_time capture_time = 0, capture_time_actual;
 	
 	benchmark_init;
-		
+	
 	retry:
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
@@ -192,6 +192,7 @@ OSC_ERR mainLoop () {
 			OscLog(ERROR, "%s: Unable to trigger the capture (%d)!\n", __func__, err);
 			goto retry;
 		}
+		capture_time_actual = capture_time;
 		capture_time = OscSupCycGet();
 		
 		valves_handleValves();
@@ -209,7 +210,7 @@ OSC_ERR mainLoop () {
 		
 		valves_handleValves();
 		
-		process(pFrameBuffer, capture_time);
+		process(pFrameBuffer, capture_time_actual);
 	}
 	
 	return SUCCESS;
