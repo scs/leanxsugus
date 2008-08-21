@@ -340,6 +340,11 @@ struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 
 void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, uint32 const thresholdWeight, t_index const spotSize)
 {
+	int32 dotProd(int32 const * const vec1, int32 const * const vec2)
+	{
+		return vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2];
+	}
+	
 	struct object * obj;
 	
 	for (obj = pObj; obj != NULL; obj = obj->pNext)
@@ -351,9 +356,13 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 			obj->classification = e_classification_tooSmall;
 		else
 		{
+			uint8 color[3];
 			int16 posX, posY;
-			uint8 color[3], mid;
-			t_index maxComp, minComp, midComp;
+			int32 planes[3][3] = {
+				{ -3288, 6429, -4160 }, /* Between green and yellow and orange and red. */
+				{ -141, 7330, -7662 }, /* Between green and yellow. */
+				{ -782105, 575153, -64151 } /* Between orange and red. */
+			}
 			
 			posX = 2 * obj->posWghtX - spotSize / 2;
 			posY = 2 * obj->posWghtY - spotSize / 2;
@@ -374,70 +383,22 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 			obj->color.green = color[1];
 			obj->color.blue = color[0];
 			
-			/* Find out which color components are the largest and the smallest. */
-			if (color[0] > color[1])
-				if (color[0] > color[2])
-				{
-					maxComp = 0;
-					if (color[1] > color[2])
-					{
-						minComp = 2;
-						midComp = 1;
-					}
-					else
-					{
-						minComp = 1;
-						midComp = 2;
-					}
-				}
+			if (dotProd(color, planes[0]) > 255)
+			{ /* green or yellow */
+				if (dotProd(color, planes[1]) > 255)
+					obj->classification = e_classification_sugusGreen
 				else
-				{
-					maxComp = 2;
-					minComp = 1;
-					midComp = 0;
-				}
+					obj->classification = e_classification_sugusYellow
+			}
 			else
-				if (color[1] > color[2])
-				{
-					maxComp = 1;
-					if (color[0] > color[2])
-					{
-						minComp = 2;
-						midComp = 0;
-					}
-					else
-					{
-						minComp = 0;
-						midComp = 2;
-					}
-				}
+			{ /* orange or red */
+				if (dotProd(color, planes[2]) > 255)
+					obj->classification = e_classification_sugusOrange
 				else
-				{
-					maxComp = 2;
-					minComp = 0;
-					midComp = 1;
-				}
+					obj->classification = e_classification_sugusRed
+			}
 			
-			mid = (uint16) (color[midComp] - color[minComp]) * 255 / (color[maxComp] - color[minComp]);
-			
-			/* Classify the object according to which color components are the largest and smallest and where in between to other lies */
-			if (minComp == 0)
-				if (maxComp == 2)
-					if (mid < 72)
-						obj->classification = e_classification_sugusRed;
-					else if (mid < 156)
-						obj->classification = e_classification_sugusOrange;
-					else
-						obj->classification = e_classification_sugusYellow;
-				else if (maxComp == 1)
-					if (mid < 166)
-						obj->classification = e_classification_sugusGreen;
-					else
-						obj->classification = e_classification_sugusYellow;
-				else
-					obj->classification = e_classification_unknown;
-			else
-				obj->classification = e_classification_unknown;
+		//	obj->classification = e_classification_unknown;
 		}
 	}
 }
