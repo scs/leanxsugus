@@ -362,7 +362,7 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 				{ -3288, 6429, -4160 }, /* Between green and yellow and orange and red. */
 				{ -141, 7330, -7662 }, /* Between green and yellow. */
 				{ -782105, 575153, -64151 } /* Between orange and red. */
-			}
+			};
 			
 			posX = 2 * obj->posWghtX - spotSize / 2;
 			posY = 2 * obj->posWghtY - spotSize / 2;
@@ -386,16 +386,16 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 			if (dotProd(color, planes[0]) > 255)
 			{ /* green or yellow */
 				if (dotProd(color, planes[1]) > 255)
-					obj->classification = e_classification_sugusGreen
+					obj->classification = e_classification_sugusGreen;
 				else
-					obj->classification = e_classification_sugusYellow
+					obj->classification = e_classification_sugusYellow;
 			}
 			else
 			{ /* orange or red */
 				if (dotProd(color, planes[2]) > 255)
-					obj->classification = e_classification_sugusOrange
+					obj->classification = e_classification_sugusOrange;
 				else
-					obj->classification = e_classification_sugusRed
+					obj->classification = e_classification_sugusRed;
 			}
 			
 		//	obj->classification = e_classification_unknown;
