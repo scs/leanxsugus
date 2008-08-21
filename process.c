@@ -185,7 +185,7 @@ void findSegments(uint8 const * const pImg, uint8 const value, s_segmentArray * 
  * @return A pointer to the object array.
  */
 struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
-	struct object * createObjectForSegment(t_index line, struct segment * pSeg, s_objectPool * pObjPool)
+	inline struct object * createObjectForSegment(t_index line, struct segment * pSeg, s_objectPool * pObjPool)
 	{
 		struct object * obj = pObjPool->pFirst[0];
 		
@@ -207,7 +207,7 @@ struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 	}
 	
 	/* Merges two objects and re-labels the segments given. */
-	struct object * mergeObjects(struct object * pObj1, struct object * pObj2, s_objectPool * pObjPool, s_segmentArray * pSegArr1, s_segmentArray * pSegArr2)
+	inline struct object * mergeObjects(struct object * pObj1, struct object * pObj2, s_objectPool * pObjPool, s_segmentArray * pSegArr1, s_segmentArray * pSegArr2)
 	{
 		if (pObj1 == NULL)
 			return pObj2;
@@ -338,9 +338,9 @@ struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 	return objPool.pFirst[1];
 }
 
-void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, uint32 const thresholdWeight, t_index const spotSize)
+inline void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, uint32 const thresholdWeight, t_index const spotSize)
 {
-	int32 dotProd(int32 const * const vec1, int32 const * const vec2)
+	inline int32 dotProd(uint8 const * const vec1, int32 const * const vec2)
 	{
 		return vec1[0] * vec2[0] + vec1[1] * vec2[1] + vec1[2] * vec2[2];
 	}
@@ -384,19 +384,15 @@ void classifyObjects(uint8 const * const pImgRaw, struct object * const pObj, ui
 			obj->color.blue = color[0];
 			
 			if (dotProd(color, planes[0]) > 255)
-			{ /* green or yellow */
 				if (dotProd(color, planes[1]) > 255)
 					obj->classification = e_classification_sugusGreen;
 				else
 					obj->classification = e_classification_sugusYellow;
-			}
 			else
-			{ /* orange or red */
 				if (dotProd(color, planes[2]) > 255)
 					obj->classification = e_classification_sugusOrange;
 				else
 					obj->classification = e_classification_sugusRed;
-			}
 			
 		//	obj->classification = e_classification_unknown;
 		}
@@ -553,7 +549,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 }
 
 /* Adjusts the valves so they fire when the object is in front of them. */
-void insertIntoValves(struct object * pObj, t_time capture_time)
+inline void insertIntoValves(struct object * pObj, t_time capture_time)
 {
 	/* gives the time needed from the conveyor belt to the position. */
 	inline t_time posToTime(int16 const pos)
@@ -578,11 +574,11 @@ void insertIntoValves(struct object * pObj, t_time capture_time)
 	valves_insertEvent(capture_time + time_bottom, capture_time + time_top, valve_begin, valve_end);
 }
 
-void removeDuplicates(struct object * const from, struct object const * const with, t_time const timeDelta, uint32 const maxDistSqr)
+inline void removeDuplicates(struct object * const from, struct object const * const with, t_time const timeDelta, uint32 const maxDistSqr)
 {
 	struct object * obj1;
 	struct object const * obj2;
-	t_index const posDelta = (timeDelta >> 8) * HEIGHT_CAPTURE / ((TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) >> 8); // We need to gain some space so the numbers don't get too big, there is probably a better way to do this...
+	t_index const posDelta = (timeDelta >> 8) * HEIGHT_GREY / ((TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) >> 8); // We need to gain some space so the numbers don't get too big, there is probably a better way to do this...
 	
 //	p(timeDelta);
 //	p(posDelta);
@@ -594,16 +590,17 @@ void removeDuplicates(struct object * const from, struct object const * const wi
 			t_index const yDist = obj2->posWghtY - obj1->posWghtY + posDelta;
 			uint32 dist = (uint32) xDist * xDist + yDist * yDist;
 			
-			printf("obj1: (%d, %d), ", obj1->posWghtX, obj1->posWghtY);
+			/* printf("obj1: (%d, %d), ", obj1->posWghtX, obj1->posWghtY);
 			printf("obj2: (%d, %d), ", obj2->posWghtX, obj2->posWghtY);
 			printf("dist: (%d, %d)\n", xDist, yDist);
-			p(dist);
+			p(dist); */
 			
 			if (dist < maxDistSqr)
-			{
-				obj1->classification = e_classification_duplicate;
-				printf("Duplicate object removed!\n");
-			}
+				if (obj1->classification != e_classification_tooSmall || obj2->classification != e_classification_tooSmall)
+				{
+					obj1->classification = e_classification_duplicate;
+					printf("Duplicate object removed!\n");
+				}
 		}
 }
 
@@ -611,7 +608,7 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 {
 	OSC_ERR err;
 	
-	uint8 const thresholdValue = 60;
+	uint8 const thresholdValue = 40;
 	uint32 const thresholdWeight = 500;
 	
 benchmark_init;
@@ -625,14 +622,13 @@ benchmark_delta;
 	{
 		struct object * const objs = findObjects(&objPool, thresholdValue), * obj;
 		static t_time last_capture_time = 0;
-		bool has_object = false;
 		
 	//m	objectPool_dump(&objPool);
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
-		/* if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 100 * 100); */
+		if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 30 * 30);
 		last_capture_time = capture_time;
 	
 	benchmark_delta;	
@@ -645,36 +641,31 @@ benchmark_delta;
 			if (obj->classification != e_classification_tooSmall)
 			{
 			//	printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, Color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
-			//	printf("Weight: %lu, Color: (%u, %u, %u) ", obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+				printf("Left: %lu, Top: %lu, Weight: %lu, Color: (%u, %u, %u)", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 				
 				if (obj->classification == e_classification_sugusGreen)
 				{
-				//	printf("-> green");
+					printf(" -> green");
 					configuration.count_color[0] += 1;
-					has_object = true;
 				}
 				else if (obj->classification == e_classification_sugusYellow)
 				{
-				//	printf("-> yellow");
+					printf(" -> yellow");
 					configuration.count_color[1] += 1;
-					has_object = true;
 				}
 				else if (obj->classification == e_classification_sugusOrange)
 				{
-				//	printf("-> orange");
+					printf(" -> orange");
 					configuration.count_color[2] += 1;
-					has_object = true;
 				}
 				else if (obj->classification == e_classification_sugusRed)
 				{
-				//	printf("-> red");
+					printf(" -> red");
 					configuration.count_color[3] += 1;
-					has_object = true;
 				}
 				else if (obj->classification == e_classification_unknown)
 				{
 					configuration.count_unknown += 1;
-					has_object = true;
 				}
 				
 				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
@@ -684,11 +675,11 @@ benchmark_delta;
 					
 					configuration.count_sorted += 1;
 				}
-			//	else
-				//	printf("\n");
+				
+				printf("\n");
 			}
 		
-		if (configuration.calibrating || has_object)
+		if (configuration.calibrating /* || has_object */)
 			writeNiceDebugPicture(pRawImg, objs, 8);
 			
 	benchmark_delta;
