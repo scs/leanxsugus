@@ -58,7 +58,7 @@ void valves_handleValves() {
 		usleep(OscSupCycToMicroSecs(sleep_time));
 	else
 	{
-		uint16 const behind = OscSupCycToMicroSecs(-sleep_time);
+		uint32 const behind = OscSupCycToMicroSecs(-sleep_time);
 		if (behind > 1000)
 			printf("Behind by %d ms!\n", behind / 1000);
 	}

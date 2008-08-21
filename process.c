@@ -537,23 +537,19 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 		{
 			if (obj->weight > 100)
 				drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, red);
-			
-			continue;
-		}
-		
-		{
+		} else {
 		//	s_color const color = obj->color;
 			s_color colorFill, colorBorder;
 			int16 spotPosX, spotPosY;
 			s_color color;
 			
-			if (obj->classification = e_classification_sugusGreen)
+			if (obj->classification == e_classification_sugusGreen)
 				color = green;
-			else if (obj->classification = e_classification_sugusYellow)
+			else if (obj->classification == e_classification_sugusYellow)
 				color = yellow;
-			else if (obj->classification = e_classification_sugusOrange)
+			else if (obj->classification == e_classification_sugusOrange)
 				color = orange;
-			else if (obj->classification = e_classification_sugusRed)
+			else if (obj->classification == e_classification_sugusRed)
 				color = red;
 			else
 				color = black;
@@ -654,7 +650,7 @@ void process(uint8 const * const pRawImg, t_time capture_time)
 {
 	OSC_ERR err;
 	
-	uint8 const thresholdValue = 40;
+	uint8 const thresholdValue = 60;
 	uint32 const thresholdWeight = 500;
 	
 benchmark_init;
@@ -666,7 +662,7 @@ benchmark_delta;
 	valves_handleValves();
 
 	{
-		struct object * objs = findObjects(&objPool, thresholdValue), * obj;
+		struct object * const objs = findObjects(&objPool, thresholdValue), * obj;
 		static t_time last_capture_time = 0;
 		bool has_object = false;
 		
@@ -674,8 +670,8 @@ benchmark_delta;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
-		if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 100 * 100);
+		/* if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 100 * 100); */
 		last_capture_time = capture_time;
 	
 	benchmark_delta;	
@@ -731,7 +727,7 @@ benchmark_delta;
 				//	printf("\n");
 			}
 		
-		if (configuration.calibrating || has_object != NULL)
+		if (configuration.calibrating || has_object)
 			writeNiceDebugPicture(pRawImg, objs, 8);
 			
 	benchmark_delta;
