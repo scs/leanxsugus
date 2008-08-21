@@ -194,6 +194,7 @@ OSC_ERR mainLoop () {
 	
 	benchmark_init;
 	
+		usleep(100); /* If we call OscCamSetupCapture this too fast after OscCamReadPicture, it will throw an error. */
 	retry:
 		err = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
@@ -203,8 +204,8 @@ OSC_ERR mainLoop () {
 		}
 		capture_time_actual = capture_time;
 		capture_time = OscSupCycGet();
-		usleep(100);
-	//	
+	//	usleep(100);
+		
 		valves_handleValves();
 		
 		config_read();
