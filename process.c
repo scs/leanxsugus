@@ -486,7 +486,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 	
 	for (obj = pObjs; obj != NULL; obj = obj->pNext)
 	{
-		s_color const green = { 0, ~0, 0 }, yellow = { 0, ~0, ~0 }, orange = { 0, ~0 >> 1, ~0 }, red = { 0, 0, ~0 }, black = { 0, 0, 0 },
+		s_color const green = { 0, ~0, 0 }, yellow = { 0, ~0, ~0 }, orange = { 0, ~0 / 2, ~0 }, red = { 0, 0, ~0 }, black = { 0, 0, 0 },
 			white = { ~0, ~0, ~0 };
 		
 		/* Objects that are too small. */
