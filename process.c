@@ -19,7 +19,6 @@
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
 
 //#define BENCHMARK_ON
-
 #ifdef BENCHMARK_ON
 uint32 benchmark_cyc;
 	#define benchmark_init benchmark_cyc = OscSupCycGet()
@@ -554,7 +553,7 @@ inline void insertIntoValves(struct object * pObj, t_time capture_time)
 	/* gives the time needed from the conveyor belt to the position. */
 	inline t_time posToTime(int16 const pos)
 	{
-		return (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) * pos / HEIGHT_GREY + TIME_TO_TOP_OF_PICTURE;
+		return (TIME_TO_BOTTOM_OF_PICTURE - TIME_TO_TOP_OF_PICTURE) / HEIGHT_GREY * pos + TIME_TO_TOP_OF_PICTURE;
 	}
 	
 	/* Gives the valve responsible for something at the position. */
@@ -565,11 +564,14 @@ inline void insertIntoValves(struct object * pObj, t_time capture_time)
 	
 	t_time const time_top = TIME_TO_VALVES - posToTime(pObj->top);
 	t_time const time_bottom = TIME_TO_VALVES - posToTime(pObj->bottom);
-	t_index const valve_begin = max(0, posToValve(pObj->left));
-	t_index const valve_end = min(15, posToValve(pObj->right));
+	t_index const valve_begin = max(0, posToValve(pObj->left) - 1);
+	t_index const valve_end = min(15, posToValve(pObj->right) + 1);
 	
 	if (time_bottom > time_top)
+	{
 		printf("Top: %d, Bottom: %d\n", pObj->top, pObj->bottom);
+		printf("Top: %d, Bottom: %d\n", pObj->top, pObj->bottom);
+	}
 	
 	valves_insertEvent(capture_time + time_bottom, capture_time + time_top, valve_begin, valve_end);
 }
@@ -596,11 +598,8 @@ inline void removeDuplicates(struct object * const from, struct object const * c
 			p(dist); */
 			
 			if (dist < maxDistSqr)
-				if (obj1->classification != e_classification_tooSmall || obj2->classification != e_classification_tooSmall)
-				{
+				if (obj1->classification != e_classification_tooSmall && obj2->classification != e_classification_tooSmall)
 					obj1->classification = e_classification_duplicate;
-					printf("Duplicate object removed!\n");
-				}
 		}
 }
 
@@ -627,8 +626,8 @@ benchmark_delta;
 		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
-		if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 30 * 30);
+	/*	if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 30 * 30); */
 		last_capture_time = capture_time;
 	
 	benchmark_delta;	
@@ -638,46 +637,56 @@ benchmark_delta;
 		
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
-			if (obj->classification != e_classification_tooSmall)
+		{
+			/* if (obj->classification == e_classification_tooSmall)
+				continue; */
+			
+			printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u)", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+			
+			if (obj->classification == e_classification_sugusGreen)
 			{
-			//	printf("Left: %u, Right: %u, Top: %u, Bottom: %u, Weight: %lu, Color: (%u, %u, %u)\n", obj->left, obj->right, obj->top, obj->bottom, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
-				printf("Left: %lu, Top: %lu, Weight: %lu, Color: (%u, %u, %u)", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
-				
-				if (obj->classification == e_classification_sugusGreen)
-				{
-					printf(" -> green");
-					configuration.count_color[0] += 1;
-				}
-				else if (obj->classification == e_classification_sugusYellow)
-				{
-					printf(" -> yellow");
-					configuration.count_color[1] += 1;
-				}
-				else if (obj->classification == e_classification_sugusOrange)
-				{
-					printf(" -> orange");
-					configuration.count_color[2] += 1;
-				}
-				else if (obj->classification == e_classification_sugusRed)
-				{
-					printf(" -> red");
-					configuration.count_color[3] += 1;
-				}
-				else if (obj->classification == e_classification_unknown)
-				{
-					configuration.count_unknown += 1;
-				}
-				
-				if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
-				{
-				//	printf(" -> sorted...\n");
-					insertIntoValves(obj, capture_time);
-					
-					configuration.count_sorted += 1;
-				}
-				
-				printf("\n");
+				printf(" -> green");
+				configuration.count_color[0] += 1;
 			}
+			else if (obj->classification == e_classification_sugusYellow)
+			{
+				printf(" -> yellow");
+				configuration.count_color[1] += 1;
+			}
+			else if (obj->classification == e_classification_sugusOrange)
+			{
+				printf(" -> orange");
+				configuration.count_color[2] += 1;
+			}
+			else if (obj->classification == e_classification_sugusRed)
+			{
+				printf(" -> red");
+				configuration.count_color[3] += 1;
+			}
+			else if (obj->classification == e_classification_unknown)
+			{
+				printf(" -> unknown");
+				configuration.count_unknown += 1;
+			}
+			else if (obj->classification == e_classification_duplicate)
+			{
+				printf(" -> duplicate");
+			}
+			else if (obj->classification == e_classification_tooSmall)
+			{
+				printf(" -> too small");
+			}
+			
+			printf("\n");
+			
+			if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
+			{
+			//	printf(" -> sorted...\n");
+				insertIntoValves(obj, capture_time);
+				
+				configuration.count_sorted += 1;
+			}
+		}
 		
 		if (configuration.calibrating /* || has_object */)
 			writeNiceDebugPicture(pRawImg, objs, 8);
