@@ -17,7 +17,6 @@
 #include "main.h"
 
 //#define BENCHMARK_ON
-
 #ifdef BENCHMARK_ON
 uint32 benchmark_cyc;
 	#define benchmark_init benchmark_cyc = OscSupCycGet()
@@ -66,36 +65,12 @@ static OSC_ERR init(const int argc, const char * * argv)
 		goto dep_err;
 	}
 	
+	OscLogSetConsoleLogLevel(ERROR);
+	OscLogSetFileLogLevel(ERROR);
+	
 	/* Seed the random generator */
 	srand(OscSupCycGet());
 	
-#if defined(OSC_HOST) || defined(OSC_SIM)
-	{
-		void *hFileNameReader;
-		
-	/*	err = OscFrdCreateConstantReader(&data.hFileNameReader, "test.bmp");
-		if (err != SUCCESS)
-		{
-			OscLog(ERROR, "%s: Unable to create constant file name reader for %s! (%d)\n", __func__, TEST_IMAGE_FN, err);
-			goto frd_err;
-		}
-		
-		err = OscCamSetFileNameReader(data.hFileNameReader);
-		if (err != SUCCESS)
-		{
-			OscLog(ERROR, "%s: Unable to set file name reader for camera! (%d)\n", __func__, err);
-			goto frd_err;
-		} */
-		
-		{
-			void * hTestImageReader;
-			
-			OscFrdCreateFileListReader(&hTestImageReader, "cam-file-list.txt");
-			OscCamSetFileNameReader(hTestImageReader);
-		}
-	}
-#endif /* defined(OSC_HOST) || defined(OSC_SIM) */
-
 	/* Set the camera registers to sane default values. */
 	err = OscCamPresetRegs();
 	if (err != SUCCESS)
@@ -104,7 +79,6 @@ static OSC_ERR init(const int argc, const char * * argv)
 		goto fb_err;
 	}
 	
-//	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_180DEG_ROTATE);
 	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_DEFAULT);
 	
 	/* Initialieses the object recognition data . */
@@ -117,6 +91,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 	
 fb_err:
 	OscUnloadDependencies(hFramework, deps, sizeof(deps)/sizeof(struct OSC_DEPENDENCY));
+	
 dep_err:
 	OscDestroy(&hFramework);
 	
@@ -136,13 +111,11 @@ OSC_ERR Unload()
 }
 
 OSC_ERR mainLoop () {
-	time_t capture_time;
-	
 	OSC_ERR err = SUCCESS;
-	static uint8 frameBuffers[2][OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
+	static uint8 frameBuffer[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
 	uint8 multiBufferIds[] = { 0, 1 };
 	
-	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2 - 50, WIDTH_CAPTURE, HEIGHT_CAPTURE);
+	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2 + 50, WIDTH_CAPTURE, HEIGHT_CAPTURE);
 	if (err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Unable to set the area of interest!\n", __func__);
@@ -156,72 +129,49 @@ OSC_ERR mainLoop () {
 		return err;
 	}
 	
-	err = OscCamSetFrameBuffer(0, sizeof frameBuffers[0], frameBuffers[0], TRUE);
+	err = OscCamSetFrameBuffer(0, sizeof frameBuffer, frameBuffer, TRUE);
 	if (err != SUCCESS)
 	{
 		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n", __func__);
 		return err;
 	}
-	
-	err = OscCamSetFrameBuffer(1, sizeof frameBuffers[1], frameBuffers[1], TRUE);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to set up the frame buffer!\n", __func__);
-		return err;
-	}
-	
-	/* Create a double-buffer from the frame buffers initilalized above.*/
-	err = OscCamCreateMultiBuffer(2, multiBufferIds);
-	if(err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to set up multi buffer!\n", __func__);
-		return err;
-	}
-	
-	err = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER, OSC_CAM_TRIGGER_MODE_MANUAL);
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to trigger the capture (%d)!\n", __func__, err);
-		goto retry;
-	}
-	capture_time = OscSupCycGet();
 	
 	valves_handleValves();
 	
 	loop {
 		uint8 * pFrameBuffer;
-		t_time capture_time_actual;
-	
+		time_t capture_time;
+		
 	benchmark_init;
-	
-		usleep(100); /* If we call OscCamSetupCapture this too fast after OscCamReadPicture, it will throw an error. */
+		
 	retry:
-		err = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER, OSC_CAM_TRIGGER_MODE_MANUAL);
+		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to trigger the capture (%d)!\n", __func__, err);
 			goto retry;
 		}
-		capture_time_actual = capture_time;
 		capture_time = OscSupCycGet();
-	//	usleep(100);
 		
 		valves_handleValves();
 		
 		config_read();
 		config_write();
 		
-		err = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, &pFrameBuffer, 0, 0);
+	benchmark_delta;
+		
+		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to read the picture (%d)!\n", __func__, err);
 			return err;
 		}
+		
 	benchmark_delta;
 		
 		valves_handleValves();
 		
-		process(pFrameBuffer, capture_time_actual);
+		process(pFrameBuffer, capture_time);
 	}
 	
 	return SUCCESS;
@@ -237,12 +187,6 @@ OSC_ERR mainLoop () {
 int main(const int argc, const char ** argv)
 {
 	OSC_ERR err = SUCCESS;
-	
-//	OscLogSetConsoleLogLevel(INFO);
-//	OscLogSetFileLogLevel(WARN);
-	
-	OscLogSetConsoleLogLevel(DEBUG);
-	OscLogSetFileLogLevel(DEBUG);
 	
 	err = init(argc, argv);
 	if (err != SUCCESS)
