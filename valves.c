@@ -9,13 +9,13 @@
 #include "config.h"
 
 /* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
-#define TUNE_VALVES_ON ((int32) CPU_FREQ / 1000 * -20)
-#define TUNE_VALVES_OFF ((int32) CPU_FREQ / 1000 * 0)
+#define TUNE_VALVES_ON ((uint32) CPU_FREQ / 1000 * -30)
+#define TUNE_VALVES_OFF ((uint32) CPU_FREQ / 1000 * 0)
 
 /* This sets to handle the valves a hundred times per second. */
-#define INTERVAL ((int32) CPU_FREQ / 100)
+#define INTERVAL ((uint32) CPU_FREQ / 100)
 /* This defines how many time steps ahead we can set a valve state */
-#define VALUES_AHEAD 10
+#define VALUES_AHEAD 100
 
 #define m printf("%s: Line %d\n", __func__, __LINE__);
 
@@ -28,14 +28,22 @@ struct {
 
 void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index const first_valve, t_index const last_valve)
 {
-	t_index const ahead_begin = (begin_time - valves.next_time) / INTERVAL;
-	t_index const ahead_end = (end_time - valves.next_time) / INTERVAL;
-	t_index i, j;
+	int32 const time_begin = begin_time - valves.next_time + TUNE_VALVES_ON;
+	int32 const time_end = end_time - valves.next_time + TUNE_VALVES_OFF;
+	t_index i, j, ahead_begin, ahead_end = time_end / INTERVAL + 1;
 	
-//	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
+	if (time_begin < 0)
+		ahead_begin = 0;
+	else
+		ahead_begin = time_begin / INTERVAL;
+	
+	printf("%d, %d, %lu, %lu\n", first_valve, last_valve, begin_time, end_time);
+	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
+	printf("%d, %d, %d, %d\n", begin_time, valves.next_time, TUNE_VALVES_ON, INTERVAL);
 	
 	assert (begin_time >= valves.next_time);
 	assert (end_time >= begin_time);
+	assert (ahead_begin >= 0);
 	assert (first_valve >= 0);
 	assert (last_valve < 16);
 	
