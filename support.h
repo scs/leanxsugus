@@ -13,8 +13,8 @@
 typedef int16 t_index;
 typedef uint32 t_time;
 
-#define max(a,b) ((a) > (b) ? (a) : (b))
-#define min(a,b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 
 #define loop while (true)
 
