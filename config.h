@@ -6,9 +6,9 @@
 struct {
 	bool sort_color[4];
 	bool sort_unknown;
-	int32 count_color[4];
-	int32 count_sorted;
-	int32 count_unknown;
+	uint32 count_color[4];
+	uint32 count_sorted;
+	uint32 count_unknown;
 	bool calibrating;
 	bool valve_override[16];
 } configuration;

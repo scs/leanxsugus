@@ -31,10 +31,10 @@ void config_write()
 	file = fdopen(fd, "w");
 	
 	for (i = 0; i < 4; i += 1)
-		fprintf(file, "count_color_%d=%ld\n", i, configuration.count_color[i]);
+		fprintf(file, "count_color_%d=%lu\n", i, configuration.count_color[i]);
 	
-	fprintf(file, "count_sorted=%ld\n", configuration.count_sorted);
-	fprintf(file, "count_unknown=%ld\n", configuration.count_unknown);
+	fprintf(file, "count_sorted=%lu\n", configuration.count_sorted);
+	fprintf(file, "count_unknown=%lu\n", configuration.count_unknown);
 	
 	fclose(file);
 	close(fd);
