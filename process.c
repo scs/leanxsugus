@@ -26,7 +26,6 @@ typedef enum {
 	e_classification_sugusYellow,
 	e_classification_unknown,
 	e_classification_tooSmall,
-	e_classification_duplicate
 } e_classification;
 
 typedef struct {
@@ -49,6 +48,7 @@ typedef struct {
 		uint32 weight;
 		s_color color;
 		e_classification classification;
+		bool isDuplicate;
 		struct object * pPrev, * pNext;
 	} objects[100];
 	
@@ -179,6 +179,7 @@ struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 			obj->bottom = line + 1;
 			obj->posWghtX = obj->weight * (obj->left + obj->right) / 2;
 			obj->posWghtY = obj->weight * line;
+			obj->isDuplicate = false;
 			
 			objectPool_move(pObjPool, obj, 0, 1);
 			pSeg->pObject = obj;
@@ -581,7 +582,7 @@ inline void removeDuplicates(struct object * const from, struct object const * c
 			
 			if (dist < maxDistSqr)
 				if (obj1->classification != e_classification_tooSmall && obj2->classification != e_classification_tooSmall)
-					obj1->classification = e_classification_duplicate;
+					obj1->isDuplicate = true;
 		}
 }
 
@@ -604,18 +605,13 @@ benchmark_delta;
 		struct object * const objs = findObjects(&objPool, thresholdValue), * obj;
 		static t_time last_capture_time = 0;
 		
-	//m	objectPool_dump(&objPool);
-		
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
-	/*	if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 30 * 30); */
+		if (last_capture_time != 0)
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 30 * 30);
 		last_capture_time = capture_time;
 	
-	benchmark_delta;	
-		
-		// This clears the whole screen and moves the curser to the upper left corner.
-	//	printf("\e[H\e[J");
+	benchmark_delta;
 		
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
@@ -625,52 +621,43 @@ benchmark_delta;
 			
 			printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u)", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
 			
-			if (obj->classification == e_classification_sugusGreen)
-			{
-				printf(" -> green");
-				configuration.count_color[0] += 1;
-			}
-			else if (obj->classification == e_classification_sugusYellow)
-			{
-				printf(" -> yellow");
-				configuration.count_color[1] += 1;
-			}
-			else if (obj->classification == e_classification_sugusOrange)
-			{
-				printf(" -> orange");
-				configuration.count_color[2] += 1;
-			}
-			else if (obj->classification == e_classification_sugusRed)
-			{
-				printf(" -> red");
-				configuration.count_color[3] += 1;
-			}
-			else if (obj->classification == e_classification_unknown)
-			{
-				printf(" -> unknown");
-				configuration.count_unknown += 1;
-			}
-			else if (obj->classification == e_classification_duplicate)
-			{
-				printf(" -> duplicate");
-			}
-			else if (obj->classification == e_classification_tooSmall)
-			{
+			if (obj->classification == e_classification_tooSmall)
 				printf(" -> too small");
-			}
+			else if (obj->classification == e_classification_sugusGreen)
+				printf(" -> green");
+			else if (obj->classification == e_classification_sugusYellow)
+				printf(" -> yellow");
+			else if (obj->classification == e_classification_sugusOrange)
+				printf(" -> orange");
+			else if (obj->classification == e_classification_sugusRed)
+				printf(" -> red");
+			else if (obj->classification == e_classification_unknown)
+				printf(" -> unknown");
 			
-			printf("\n");
+			if (obj->isDuplicate)
+				printf(" (duplicate)\n");
+			else
+				printf("\n");
+			
+			if (obj->classification == e_classification_sugusGreen)
+				configuration.count_color[0] += 1;
+			else if (obj->classification == e_classification_sugusYellow)
+				configuration.count_color[1] += 1;
+			else if (obj->classification == e_classification_sugusOrange)
+				configuration.count_color[2] += 1;
+			else if (obj->classification == e_classification_sugusRed)
+				configuration.count_color[3] += 1;
+			else if (obj->classification == e_classification_unknown)
+				configuration.count_unknown += 1;
 			
 			if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
 			{
-			//	printf(" -> sorted...\n");
 				insertIntoValves(obj, capture_time);
-				
 				configuration.count_sorted += 1;
 			}
 		}
 		
-		if (configuration.calibrating /* || has_object */)
+		if (configuration.calibrating)
 			writeNiceDebugPicture(pRawImg, objs, 8);
 			
 	benchmark_delta;
