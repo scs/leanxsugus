@@ -102,7 +102,6 @@ OSC_ERR Unload()
 OSC_ERR mainLoop () {
 	OSC_ERR err = SUCCESS;
 	static uint8 frameBuffer[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
-	uint8 multiBufferIds[] = { 0, 1 };
 	
 	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2 + 50, WIDTH_CAPTURE, HEIGHT_CAPTURE);
 	if (err != SUCCESS)
