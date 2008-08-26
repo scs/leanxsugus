@@ -4,6 +4,8 @@
 
 #include <unistd.h>
 
+#define BENCHMARK_ENABLE
+
 #include "modbus.h"
 #include "config.h"
 #include "valves.h"

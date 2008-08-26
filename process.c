@@ -2,7 +2,7 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-//#define BENCHMARK_ENABLE
+#define BENCHMARK_ENABLE
 
 #include "valves.h"
 #include "config.h"
