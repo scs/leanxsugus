@@ -595,7 +595,7 @@ benchmark_delta;
 		classifyObjects(pRawImg, objs, thresholdWeight, 8);
 		
 		if (last_capture_time != 0)
-			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 30 * 30);
+			removeDuplicates(objPool.pFirst[1], objPool.pFirst[2], capture_time - last_capture_time, 45 * 45);
 		last_capture_time = capture_time;
 	
 	benchmark_delta;
@@ -626,21 +626,26 @@ benchmark_delta;
 			else
 				printf("\n");
 			
-			if (obj->classification == e_classification_sugusGreen)
-				configuration.count_color[0] += 1;
-			else if (obj->classification == e_classification_sugusYellow)
-				configuration.count_color[1] += 1;
-			else if (obj->classification == e_classification_sugusOrange)
-				configuration.count_color[2] += 1;
-			else if (obj->classification == e_classification_sugusRed)
-				configuration.count_color[3] += 1;
-			else if (obj->classification == e_classification_unknown)
-				configuration.count_unknown += 1;
+			if (! obj->isDuplicate)
+			{
+				if (obj->classification == e_classification_sugusGreen)
+					configuration.count_color[0] += 1;
+				else if (obj->classification == e_classification_sugusYellow)
+					configuration.count_color[1] += 1;
+				else if (obj->classification == e_classification_sugusOrange)
+					configuration.count_color[2] += 1;
+				else if (obj->classification == e_classification_sugusRed)
+					configuration.count_color[3] += 1;
+				else if (obj->classification == e_classification_unknown)
+					configuration.count_unknown += 1;
+			}
 			
 			if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
 			{
 				insertIntoValves(obj, capture_time);
-				configuration.count_sorted += 1;
+				
+				if (! obj->isDuplicate)
+					configuration.count_sorted += 1;
 			}
 		}
 		
@@ -649,7 +654,7 @@ benchmark_delta;
 			
 	benchmark_delta;
 	
-	//	printf("\n");
+		printf("\n");
 	}
 }
 
