@@ -2,8 +2,6 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
-#include <stdbool.h>
-#include <signal.h>
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>

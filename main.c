@@ -4,7 +4,6 @@
  */
 
 #include <string.h>
-#include <sched.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
