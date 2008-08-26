@@ -66,9 +66,7 @@ void objectPool_dump(s_objectPool const * const pPool)
 	
 	for (i = 0; i < length(pPool->objects); i += 1)
 	{
-		printf("%u: %ld, %ld\n", i,
-			pPool->objects[i].pPrev - (pPool->objects),
-			pPool->objects[i].pNext - (pPool->objects));
+		printf("%u: %ld, %ld\n", i, pPool->objects[i].pPrev - (pPool->objects), pPool->objects[i].pNext - (pPool->objects));
 	}
 }
 
@@ -85,9 +83,7 @@ void objectPool_init (s_objectPool * const pPool)
 	
 	pPool->pFirst[0] = pPool->objects;
 	for (i = 1; i < length (pPool->pFirst); i += 1)
-	{
 		pPool->pFirst[i] = NULL;
-	}
 	
 	pPool->objects[0].pPrev = NULL;
 	pPool->objects[length(pPool->objects) - 1].pNext = NULL;
@@ -97,26 +93,19 @@ void objectPool_move (s_objectPool * const pPool, struct object * const pObj, t_
 {
 	/* First, we remove the object from the from list. */
 	if (pObj->pPrev == NULL)
-	{ /* The object is at the begining of the inactive list. */
+		/* The object is at the begining of the inactive list. */
 		pPool->pFirst[from] = pObj->pNext;
-	}
 	else
-	{
 		pObj->pPrev->pNext = pObj->pNext;
-	}
 	
 	if (pObj->pNext != NULL)
-	{
 		pObj->pNext->pPrev = pObj->pPrev;
-	}
 	
 	/* And then put it into the active list. */
 	pObj->pPrev = NULL;
 	pObj->pNext = pPool->pFirst[to];
 	if (pObj->pNext != NULL)
-	{
 		pObj->pNext->pPrev = pObj;
-	}
 	pPool->pFirst[to] = pObj;
 }
 
@@ -233,13 +222,9 @@ struct object * findObjects(s_objectPool * const pPool, uint8 const value) {
 		objectPool_move (pPool, pPool->pFirst[2], 2, 0);
 	
 	assert(pPool->pFirst[2] == NULL);
-//m	objectPool_dump(pPool);
 	
 	pPool->pFirst[2] = pPool->pFirst[1];
 	pPool->pFirst[1] = NULL;
-	
-	/* This marks all objects as inactive. */
-//	objectPool_init(&objPool);
 	
 	segsCurr->numSegments = 0;
 	
@@ -335,7 +320,9 @@ inline void classifyObjects(uint8 const * const pImgRaw, struct object * const p
 		obj->posWghtY /= obj->weight;
 		
 		if (obj->weight < thresholdWeight)
+		{
 			obj->classification = e_classification_tooSmall;
+		}
 		else
 		{
 			uint8 color[3];
@@ -352,11 +339,11 @@ inline void classifyObjects(uint8 const * const pImgRaw, struct object * const p
 			/* Move the spot inside the picture. */
 			if (posX < 0)
 				posX = 0;
+			else if (posX + spotSize >= WIDTH_CAPTURE)
+				posX = WIDTH_CAPTURE - spotSize;
 			if (posY < 0)
 				posY = 0;
-			if (posX + spotSize >= WIDTH_CAPTURE)
-				posX = WIDTH_CAPTURE - spotSize;
-			if (posY + spotSize >= HEIGHT_CAPTURE)
+			else if (posY + spotSize >= HEIGHT_CAPTURE)
 				posY = HEIGHT_CAPTURE - spotSize;
 			
 			OscVisDebayerSpot(pImgRaw, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, posX, posY, spotSize, color);
@@ -416,14 +403,12 @@ void fillRectangle(uint8 * const pImg, t_index const width, t_index const left, 
 	
 	/* Draw the vertical lines. */
 	for (iy = top; iy < bottom; iy += 1)
-	{
 		for (ix = left; ix < right; ix += 1)
 		{
 			pImg[(width * iy + ix) * 3] = color.blue;
 			pImg[(width * iy + ix) * 3 + 1] = color.green;
 			pImg[(width * iy + ix) * 3 + 2] = color.red;
 		}
-	}
 }
 
 void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pObjs, t_index const spotSize)
@@ -476,7 +461,9 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 		{
 			if (obj->weight > 100)
 				drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, red);
-		} else {
+		}
+		else
+		{
 		//	s_color const color = obj->color;
 			s_color colorFill, colorBorder;
 			int16 spotPosX, spotPosY;
@@ -504,11 +491,11 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 			/* Move the rectangle inside the picture. */
 			if (spotPosX < 0)
 				spotPosX = 0;
+			else if (spotPosX + spotSize >= WIDTH_CAPTURE)
+				spotPosX = WIDTH_CAPTURE - spotSize;
 			if (spotPosY < 0)
 				spotPosY = 0;
-			if (spotPosX + spotSize >= WIDTH_CAPTURE)
-				spotPosX = WIDTH_CAPTURE - spotSize;
-			if (spotPosY + spotSize >= HEIGHT_CAPTURE)
+			else if (spotPosY + spotSize >= HEIGHT_CAPTURE)
 				spotPosY = HEIGHT_CAPTURE - spotSize;
 			
 			/* draws a rectangle filled with the color found */
@@ -675,5 +662,4 @@ void process_init() {
 	}
 	
 	objectPool_init(&objPool);
-//m	objectPool_dump(&objPool);
 }
