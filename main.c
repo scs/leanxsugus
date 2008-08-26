@@ -9,23 +9,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include "inc/oscar.h"
+//#define BENCHMARK_ENABLE
+
 #include "process.h"
 #include "config.h"
 #include "modbus.h"
 #include "valves.h"
 #include "main.h"
-
-//#define BENCHMARK_ON
-#ifdef BENCHMARK_ON
-uint32 benchmark_cyc;
-	#define benchmark_init benchmark_cyc = OscSupCycGet()
-//	#define benchmark_delta { t_time cyc = OscSupCycGet(); printf("Line %d: %lu \xce\xbcs\n", __LINE__, OscSupCycToMicroSecs(cyc - benchmark_cyc)); benchmark_cyc = cyc; }
-	#define benchmark_delta { t_time cyc = OscSupCycGet(); printf("Line %d: %lu ms\n", __LINE__, OscSupCycToMicroSecs(cyc - benchmark_cyc) / 1000); benchmark_cyc = cyc; }
-#else /* BENCHMARK_ON */
-	#define benchmark_init
-	#define benchmark_delta
-#endif /* BENCHMARK_ON */
 
 void *hFramework;
 

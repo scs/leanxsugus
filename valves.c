@@ -4,9 +4,9 @@
 
 #include <unistd.h>
 
-#include "valves.h"
 #include "modbus.h"
 #include "config.h"
+#include "valves.h"
 
 /* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
 #define TUNE_VALVES_ON ((uint32) CPU_FREQ / 1000 * -30)
@@ -16,8 +16,6 @@
 #define INTERVAL ((uint32) CPU_FREQ / 100)
 /* This defines how many time steps ahead we can set a valve state */
 #define VALUES_AHEAD 100
-
-#define m printf("%s: Line %d\n", __func__, __LINE__);
 
 struct {
 	/* Time the values values[nex_values] should be written to the modbus interface. */

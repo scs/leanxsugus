@@ -2,33 +2,15 @@
  * @brief Contains the actual algorithm and calculations.
  */
 
+//#define BENCHMARK_ENABLE
+
 #include "valves.h"
 #include "config.h"
 #include "process.h"
 
-#if defined(OSC_HOST)
-#define IMG_FILENAME "/var/www/image.bmp"
-#else
 #define IMG_FILENAME "/home/httpd/image.bmp"
-#endif
-
-#define m printf("%s: Line %d\n", __func__, __LINE__);
-#define p(n) printf("%s: Line %d: %s: %d\n", __func__, __LINE__ , #n, n);
-
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 #define HEIGHT_GREY (HEIGHT_CAPTURE / 2)
-
-//#define BENCHMARK_ON
-#ifdef BENCHMARK_ON
-uint32 benchmark_cyc;
-	#define benchmark_init benchmark_cyc = OscSupCycGet()
-	#define benchmark_delta { t_time cyc = OscSupCycGet(); printf("Line %d: %lu us\n", __LINE__, OscSupCycToMicroSecs(cyc - benchmark_cyc)); benchmark_cyc = cyc; }
-#else /* BENCHMARK_ON */
-	#define benchmark_init
-	#define benchmark_delta
-#endif /* BENCHMARK_ON */
-
-#define m printf("%s: Line %d\n", __func__, __LINE__);
 
 struct {
 	enum EnBayerOrder enBayerOrder;
