@@ -4,7 +4,7 @@
 
 #include <unistd.h>
 
-#define BENCHMARK_ENABLE
+#define ASSERTS_ENABLE
 
 #include "modbus.h"
 #include "config.h"
