@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include "inc/oscar.h"
 
+/*! @brief A type used for indexing stuff, like in loops. */
 typedef int16 t_index;
+/*! @brief A type used to measure time. */
 typedef uint32 t_time;
 
 #define max(a, b) ((a) > (b) ? (a) : (b))
@@ -22,6 +24,7 @@ typedef uint32 t_time;
 #define length(a) ((sizeof (a)) / sizeof *(a))
 
 #ifdef ASSERTS_ENABLE
+/*! @brief Checks wether the given expression hold true. If this is not the case a warning is printed. */
 #define assert(a) if (!(a)) printf("%s: %s: Line %d: Assertion failed: %s\n", __FILE__, __func__, __LINE__, #a)
 #else /* ASSERTS_ENABLE */
 #define assert(a)
@@ -44,7 +47,9 @@ uint32 benchmark_cyc;
 #define benchmark_delta
 #endif /* BENCHMARK_ENABLE */
 
+/*! @brief Width of the image to be captured. */
 #define WIDTH_CAPTURE OSC_CAM_MAX_IMAGE_WIDTH
-#define HEIGHT_CAPTURE 272 /* OSC_CAM_MAX_IMAGE_HEIGHT */
+/*! @brief height of the image to be captured. */
+#define HEIGHT_CAPTURE 272
 
 #endif /* SUPPORT_H_ */
