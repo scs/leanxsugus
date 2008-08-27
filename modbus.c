@@ -11,16 +11,23 @@
 
 #include "modbus.h"
 
+/*! @brief The bit-rate to be used by the serial adapter for the modbus interface. */
 #define BAUDRATE B115200
+/*! @brief The device the serial interface is mapped to. */
 #define CONSOLE_DEVICE "/dev/ttyBF0"
+/*! @brief Length of one message to set the status of the valves. */
 #define MESSAGE_LENGTH 9
+/*! @brief Address of the buscoupler. */
 #define MODBUS_ADDRESS 1
 
 struct {
+	/*! @brief File descriptor we get to access the device. */
 	int fd;
+	/*! @brief Buffer for the message and the CRC. */
 	uint8 message[MESSAGE_LENGTH + 2];
 } modbus;
 
+/*! @brief Adds the CRC to the last two bytes of modbus.message. */
 void calculateCRC()
 {
 	/* Table of CRC values for high-order byte */
@@ -36,9 +43,9 @@ void calculateCRC()
 	uint8 uchCRCHi = 0xff, uchCRCLo = 0xff;
 	t_index i, uIndex;
 	
-	/* table */
+	/* pass through message buffer*/
 	for (i = 0; i < MESSAGE_LENGTH; i += 1)
-	{ /* pass through message buffer*/
+	{
 		/* calculate the CRC*/
 		uIndex = uchCRCHi ^ modbus.message[i];
 		
@@ -50,6 +57,7 @@ void calculateCRC()
 	modbus.message[MESSAGE_LENGTH + 1] = uchCRCLo;
 }
 
+/*! @brief Fills modbus.message with a message to set the valves. */
 void createMessage(uint16 const valves)
 {
 	modbus.message[0] = MODBUS_ADDRESS;
@@ -61,14 +69,29 @@ void createMessage(uint16 const valves)
 	modbus.message[6] = 0x02;
 	modbus.message[7] = valves & 0xff;
 	modbus.message[8] = valves >> 8;
-//	printf("Created message for valve settings %04x.\n", valves);
 }
 
+/*!
+ * @brief Sends a message over modbus to set the state of the valves.
+ *
+ * @param valves State to set the valves to. Each bit represents one valve where a high bit activates the valve.
+ */
+void modbus_sendMessage(uint16 const valves)
+{
+	/* Fills the message buffer. */
+	createMessage(valves);
+	calculateCRC();
+	
+	/* Writes the message buffer to the serial device. */
+	write(modbus.fd, modbus.message, MESSAGE_LENGTH + 2);
+}
+
+/*! @brief Initializes the modbus subsystem. */
 void modbus_init()
 {
-//	FILE * fd;
 	struct termios newtio;
 	
+	/* Open the serial device. */
 	modbus.fd = open(CONSOLE_DEVICE, O_WRONLY | O_DSYNC | O_NOCTTY); 
 	if (modbus.fd < 0)
 	{
@@ -78,27 +101,13 @@ void modbus_init()
 	
 	printf("Serial console initialized.\n");
 	
-//	tcgetattr(fd, &oldtio); /* save current port settings */
-	
+	/* Set the parameters of the serial device to the ones needed for modbus. */
 	bzero(&newtio, sizeof newtio);
 	newtio.c_cflag = BAUDRATE | CS8 | CLOCAL | CREAD | PARENB;
 	newtio.c_iflag = IGNPAR | IGNBRK;
 	newtio.c_oflag = 0;
 	newtio.c_lflag = 0;
-	 
-//	newtio.c_cc[VTIME] = 0; /* inter-character timer unused */
-//	newtio.c_cc[VMIN] = 1; /* blocking read until 5 chars received */
 	
 	tcflush(modbus.fd, TCIFLUSH);
 	tcsetattr(modbus.fd, TCSANOW, &newtio);
-}
-
-void modbus_sendMessage(uint16 const valves)
-{
-	createMessage(valves);
-	calculateCRC();
-	
-	write(modbus.fd, modbus.message, MESSAGE_LENGTH + 2);
-	
-//	printf("Sent data: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x.\n", modbus.message[0], modbus.message[1], modbus.message[2], modbus.message[3], modbus.message[4], modbus.message[5], modbus.message[6], modbus.message[7], modbus.message[8], modbus.message[9], modbus.message[10]);
 }
