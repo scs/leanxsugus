@@ -1,7 +1,3 @@
-/*! @file process_frame.c
- * @brief Contains the actual algorithm and calculations.
- */
-
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -10,14 +6,18 @@
 
 #include "config.h"
 
+/*! @brief Name of the pipe to read configuration commands from. */
 #define CONFIG_FILENAME "/home/httpd/cgi-bin/config"
+/*! @brief Name to write statistical data to. */
 #define STATISTICS_FILENAME "/home/httpd/statistics.txt"
 
+/*! @brief Writes a file with all the statistics values to be read by the web interface. */
 void config_write()
 {
 	int fd, i, ret;
 	FILE * file;
 	
+	/* Open the statistics journal file. */
 	fd = open(STATISTICS_FILENAME "~", O_WRONLY | O_CREAT);
 	
 	if (fd == -1)
@@ -26,22 +26,41 @@ void config_write()
 		return;
 	}
 	
+	/* Create a stream out of the file descriptor. */
 	file = fdopen(fd, "w");
 	
+	/* Write the counts of all the sugus by color. */
 	for (i = 0; i < 4; i += 1)
 		fprintf(file, "count_color_%d=%lu\n", i, configuration.count_color[i]);
 	
+	/* Write the counts of othe other categories. */
 	fprintf(file, "count_sorted=%lu\n", configuration.count_sorted);
 	fprintf(file, "count_unknown=%lu\n", configuration.count_unknown);
 	
+	/* Close the file stream and descripor. */
 	fclose(file);
 	close(fd);
 	
+	/* Move the journal to the final path. */
 	ret = rename(STATISTICS_FILENAME "~", STATISTICS_FILENAME);
 	if (ret)
 		printf("The statistics file could be moved to its final place.\n");
 }
 
+/*!
+ * @brief Reads command availible from the configuration pipe.
+ *
+ * The following commands are understood by the configuration interface:
+ *	- "sort_color_" <n> "=" ( "true" | "false" ): Sort out sugus of the specified color where n may be:
+ *		- "0": Green sugus.
+ *		- "1": Yellow sugus.
+ *		- "2": Orange sugus.
+ *		- "3": Red sugus.
+ *	- "sort_unknown=" ( "true" | "false" ): Whether to sort sugus whose color could not be determined.
+ *	- "valve_override_" <n> "=" ( "true" | "false" ): Whether to activate valve <n> no matter what.
+ *	- "calibrating=" ( "true" | "false" ): Wheter to activate the calibration mode.
+ *	- "reset_counter": Reset all the counters to zero.
+ */
 void config_read()
 {
 	static int fd = -1;
@@ -49,8 +68,10 @@ void config_read()
 	char buf[80] = { 0 }; /* Damned be the ones who need more than 80 characters. */
 	char * pos, * ret;
 	
+	/* Check whether we already have the pipe opened. */
 	if (fd == -1)
 	{
+		/* Open the pipe nonblockingly. */
 		fd = open(CONFIG_FILENAME, O_NONBLOCK | O_RDONLY);
 		
 		if (fd == -1)
@@ -59,17 +80,17 @@ void config_read()
 			return;
 		}
 		
+		/* Create a stream out if the file descriptor. */
 		file = fdopen(fd, "r");
 	}
 	
 	/* Gets one line. */
 	ret = fgets(buf, sizeof buf, file);
 	
+	/* Check whether we read something. */
 	if (ret == NULL) {
 		if (feof(file))
-		{ /* There was no data available in the pipe. */
-		//	printf("No commands availible...\n");
-			
+		{	/* There was no data available in the pipe. */
 			fclose(file);
 			close(fd);
 			fd = -1;
@@ -78,8 +99,7 @@ void config_read()
 		}
 		
 		if (errno == EAGAIN)
-		{ /* There is data, but not a complete line. */
-		//	printf("Waiting for a complete line...\n");
+		{	/* There is data, but not a complete line. */
 			return;
 		}
 	}
@@ -89,7 +109,7 @@ void config_read()
 	
 	/* Test if there was an equals sign in the line */
 	if (pos != NULL)
-	{
+	{	/* There was an equals sign at pos. */
 		*pos = 0; /* End the first part of the line. */
 		pos += 1; /* Move into the second part of the string. */
 		
@@ -118,7 +138,7 @@ void config_read()
 			configuration.calibrating = strcmp(pos, "true") == 0;
 	}
 	else
-	{
+	{	/* There was no equals sign. */
 		printf("%s\n", buf);
 		
 		if (strcmp(buf, "reset_counter") == 0)
@@ -133,6 +153,7 @@ void config_read()
 	}
 }
 
+/*! @brief Initializes the configuration subsystem, mainly sets all the configuration variables to their default value. */
 void config_init() {
 	configuration.sort_color[0] = false;
 	configuration.sort_color[1] = false;
