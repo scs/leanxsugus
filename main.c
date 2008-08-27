@@ -24,8 +24,6 @@ struct OSC_DEPENDENCY deps[] = {
 	{ "sup", OscSupCreate, OscSupDestroy },
 	{ "bmp", OscBmpCreate, OscBmpDestroy },
 	{ "cam", OscCamCreate, OscCamDestroy },
-	{ "hsm", OscHsmCreate, OscHsmDestroy },
-	{ "ipc", OscIpcCreate, OscIpcDestroy },
 	{ "vis", OscVisCreate, OscVisDestroy }
 };
 
@@ -54,6 +52,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 		goto dep_err;
 	}
 	
+	/* Set log levels. */
 	OscLogSetConsoleLogLevel(ERROR);
 	OscLogSetFileLogLevel(ERROR);
 	
@@ -70,7 +69,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 	
 	OscCamSetupPerspective(OSC_CAM_PERSPECTIVE_DEFAULT);
 	
-	/* Initialieses the object recognition data . */
+	/* Initializes all parts if the application */
 	process_init();
 	config_init();
 	valves_init();
@@ -99,10 +98,16 @@ OSC_ERR Unload()
 	return SUCCESS;
 }
 
-OSC_ERR mainLoop () {
+/*!
+ * @brief This is the main loop which is called after the initialisation of the application.
+ *
+ * This loop alternately takes pictures and calls parts of the aplication to process the image, handle the valves and read and write configuration data.
+ */
+OSC_ERR mainLoop() {
 	OSC_ERR err = SUCCESS;
 	static uint8 frameBuffer[OSC_CAM_MAX_IMAGE_WIDTH * OSC_CAM_MAX_IMAGE_HEIGHT];
 	
+	/* This sets the sensor area to capture the picture from. */
 	err = OscCamSetAreaOfInterest((OSC_CAM_MAX_IMAGE_WIDTH - WIDTH_CAPTURE) / 2, (OSC_CAM_MAX_IMAGE_HEIGHT - HEIGHT_CAPTURE) / 2 + 50, WIDTH_CAPTURE, HEIGHT_CAPTURE);
 	if (err != SUCCESS)
 	{
@@ -110,6 +115,7 @@ OSC_ERR mainLoop () {
 		return err;
 	}
 	
+	/* This set the exposure time to a reasonable value for the linghting in the sorter. */
 	err = OscCamSetShutterWidth(5000);
 	if (err != SUCCESS)
 	{
@@ -117,6 +123,7 @@ OSC_ERR mainLoop () {
 		return err;
 	}
 	
+	/* This sets the frame buffer to store the captured picture in. */
 	err = OscCamSetFrameBuffer(0, sizeof frameBuffer, frameBuffer, TRUE);
 	if (err != SUCCESS)
 	{
@@ -124,6 +131,7 @@ OSC_ERR mainLoop () {
 		return err;
 	}
 	
+	/* This handles the Valves for the first time, so we will be in sync from here on. */
 	valves_handleValves();
 	
 	loop {
@@ -133,6 +141,7 @@ OSC_ERR mainLoop () {
 	benchmark_init;
 		
 	retry:
+		/* This starts the capture and records the time. */
 		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
 		if (err != SUCCESS)
 		{
@@ -148,6 +157,7 @@ OSC_ERR mainLoop () {
 		
 	benchmark_delta;
 		
+		/* Here we wait for the picture be availible in the frame buffer. */
 		err = OscCamReadPicture(0, &pFrameBuffer, 0, 0);
 		if (err != SUCCESS)
 		{
@@ -159,6 +169,7 @@ OSC_ERR mainLoop () {
 		
 		valves_handleValves();
 		
+		/* This processes the image and fills the valve buffer. */
 		process(pFrameBuffer, capture_time);
 	}
 	
@@ -176,6 +187,7 @@ int main(const int argc, const char ** argv)
 {
 	OSC_ERR err = SUCCESS;
 	
+	/* This initializes various parts of the framework and the application. */
 	err = init(argc, argv);
 	if (err != SUCCESS)
 	{
@@ -184,8 +196,10 @@ int main(const int argc, const char ** argv)
 	}
 	OscLog(INFO, "Initialization successful!\n");
 	
+	/* Calls the main loop. This only returns on an error. */
 	mainLoop();
-		
+	
+	/* On an error, we unload the framework, before we exit. */
 	Unload();
 	return 0;
 }
