@@ -20,12 +20,24 @@
 #define VALUES_AHEAD 100
 
 struct {
-	/* Time the values values[nex_values] should be written to the modbus interface. */
+	/*! @brief Time the values values[nex_values] should be written to the modbus interface. */
 	t_time next_time;
+	/*! @brief values[next_values] contains the valve values that will be written to the modbus interface next. */
 	t_index next_values;
+	/*! @brief This is the ring-buffer that contains the valve values for the future. */
 	bool values[VALUES_AHEAD][16];
 } valves;
 
+/*!
+ * @brief This inserts an event into the valve ring-buffer.
+ *
+ * A valve event will be inserted into the ring-buffer so the specified valves will activate at the specified time.
+ *
+ * @param begin_time The time at wich the valves should open.
+ * @param end_time The time at wich the valves should close.
+ * @param first_valve Number of the first valve to affect.
+ * @param last_valve Number of the last valve to affect.
+ */
 void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index const first_valve, t_index const last_valve)
 {
 	int32 const time_begin = begin_time - valves.next_time + TUNE_VALVES_ON;
@@ -53,26 +65,31 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 			valves.values[(valves.next_values + i) % VALUES_AHEAD][15 - j] = true;
 }
 
-/* This blocks until the time to handle the valves has arrived and then sends the next packet over the modbus interface. */
+/*!
+ * @brief Handles the valves for the next time step.
+ *
+ * This blocks until the time to handle the valves has arrived and then sends the next packet over the modbus interface.
+ */
 void valves_handleValves() {
 	int32 const sleep_time = valves.next_time - OscSupCycGet();
 	t_index i;
 	uint16 valves_out = 0;
 	
+	/* If we're in calibration mode, we're not handling the valves */
 	if (configuration.calibrating)
 		return;
 	
 	if (sleep_time > 0)
 		usleep(OscSupCycToMicroSecs(sleep_time));
-	else
+	
+	if (sleep_time < 0)
 	{
 		uint32 const behind = OscSupCycToMicroSecs(-sleep_time);
 		if (behind > 1000)
 			printf("Behind by %d ms!\n", behind / 1000);
 	}
 	
-//	printf("-> %d\n", valves.next_values);
-	
+	/* Here we put together the two bytes we send over Modbus. */
 	for (i = 0; i < 16; i += 1)
 	{
 		valves_out <<= 1;
@@ -81,21 +98,27 @@ void valves_handleValves() {
 		valves.values[valves.next_values][i] = false;
 	}
 	
+	/* This sends the message. */
 	modbus_sendMessage(valves_out);
 	
+	/* Here we set up the pointer to the ring buffer an the time we will handle the valves next. */
 	valves.next_values = (valves.next_values + 1) % VALUES_AHEAD;
 	valves.next_time += INTERVAL;
 }
 
+/*!
+ * @brief Initializes the valve handling subsystem.
+ */
 void valves_init()
 {
 	t_index i, j;
 	
-	/* Clears the ring buffer. */
+	/* This clears the ring buffer. */
 	for (i = 0; i < length(valves.values); i += 1)
 		for (j = 0; i < 16; i += 1)
 			valves.values[i][j] = false;
 	
+	/* Here we set up the pointer to the ring buffer an the time we will handle the valves next. */
 	valves.next_values = 0;
 	valves.next_time = OscSupCycGet();
 }
