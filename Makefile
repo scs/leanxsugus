@@ -8,11 +8,11 @@ TARGETSIM_SUFFIX = _sim_target
 -include .config
 
 # decide whether we are building or dooing something other like cleaning or configuring
-ifeq ($(filter $(MAKECMDGOALS), clean distclean config), )
-  # check whether a .config file has been found
-  ifeq ($(filter .config, $(MAKEFILE_LIST)), )
-    $(error "Cannot make the target '$(MAKECMDGOALS)' without configuring the application. Please run make config to do this.")
-  endif
+ifeq '' '$(filter $(MAKECMDGOALS), clean distclean config)'
+# check whether a .config file has been found
+ifeq '' '$(filter .config, $(MAKEFILE_LIST))'
+$(error "Cannot make the target '$(MAKECMDGOALS)' without configuring the application. Please run make config to do this.")
+endif
 endif
 
 # Compile options
@@ -76,6 +76,12 @@ host: $(SOURCES) inc/*.h lib/libosc_host.a
 	@ echo "Host cgi done."
 #	cp $(OUT)$(HOST_SUFFIX) $(OUT)
 
+.PHONY: doc
+doc:
+	rm -rf doc/{html,latex}
+	doxygen doc/documentation.doxygen
+	ln -sf html/index.html doc/index.html
+
 # Target to explicitly start the configuration process
 .PHONY: config
 config:
@@ -110,6 +116,7 @@ deploysim: $(OUT)$(TARGETSIM_SUFFIX)
 .PHONY: clean
 clean:	
 	rm -f $(OUT)$(HOST_SUFFIX) $(OUT)$(TARGET_SUFFIX) $(OUT)$(TARGETSIM_SUFFIX)
+	rm -rf doc/{html,latex,index.html}
 	rm -f *.o *.gdb
 	$(MAKE) clean -C cgi
 	@ echo "Directory cleaned"
