@@ -3,6 +3,14 @@
  * @brief Main file of the template application. Mainly contains initialization code.
  */
 
+/*!
+ * \mainpage
+ * \image html sugus-orange.png
+ * \section Introduction
+ * This is the documentation of the LeanXsugus source code. LeanXsugus is a Project to port the Sugus sorting algorithm of the SCS Demo-Sorter to the LeanXcam.
+ *
+ */
+
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
