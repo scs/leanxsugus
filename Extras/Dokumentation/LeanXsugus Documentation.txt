@@ -1,0 +1,9 @@
+= LeanXsugus Documentation =
+
+== Introduction ==
+
+As a demonstration installation for the entrange area of the SCS Office, a machine that sort Sugus on the basis of vision technology was built by Bernhard Mäder in 2004.
+
+The installation is capable of sorting Sugus candies according to their color trough compressed air. It consists of the sorter which is built around an aluminium frame, a supercharger which delivers the compressed air and an Intel-based tablet PC which is connected to the logic via ethernet.
+
+The sorter has ontop of it a conveyor belt, driven by an industrial motor. If a Sugus is placed placed on the conveyor belt, it will eventualy fall in front of a black metal sheet where it is captured by an industrial, space-proven camera. The images are transfered to a custom-built DSP-Boards, running the recognition software ontop of a realtime micro-kernel. If sugus in the visible field is recognized to be sorted out, the corresponding valves will be opened in assistance of a Modbus digital interface connected over RS-485. At the bottom of the sorter, a plexiglass container, divided into two compartments, collects the Sugus sepparated by wether theire color was to be sorted out.
