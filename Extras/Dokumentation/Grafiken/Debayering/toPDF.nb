@@ -1,0 +1,100 @@
+(* Content-type: application/mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 6.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       145,          7]
+NotebookDataLength[      2915,         91]
+NotebookOptionsPosition[      2648,         77]
+NotebookOutlinePosition[      3004,         93]
+CellTagsIndexPosition[      2961,         90]
+WindowFrame->Normal
+ContainsDynamic->False*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{
+  "name", "=", 
+   "\"\</Users/michi/Documents/LeanXcam/source/LeanXsugus/Extras/\
+Dokumentation/Grafiken/Debayering/Original\>\""}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{
+   RowBox[{
+    RowBox[{"Import", "[", 
+     RowBox[{"name", "<>", "\"\<.png\>\""}], "]"}], "\[LeftDoubleBracket]", 
+    RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "/", "255"}], 
+  ";"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Replace", "[", 
+   RowBox[{"%", ",", 
+    RowBox[{"{", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"a", ":", 
+        RowBox[{"{", 
+         RowBox[{"_", ",", "_", ",", "__"}], "}"}]}], "\[RuleDelayed]", 
+       RowBox[{"RGBColor", "[", "a", "]"}]}], ",", 
+      RowBox[{"a_", "\[RuleDelayed]", 
+       RowBox[{"GrayLevel", "[", "a", "]"}]}]}], "}"}], ",", 
+    RowBox[{"{", "2", "}"}]}], "]"}], ";"}], "\[IndentingNewLine]", 
+ RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
+  RowBox[{"{", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"EdgeForm", "[", 
+     RowBox[{"{", 
+      RowBox[{"White", ",", 
+       RowBox[{"AbsoluteThickness", "[", "1", "]"}]}], "}"}], "]"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"MapIndexed", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"#", ",", 
+         RowBox[{"Rectangle", "[", "#2", "]"}]}], "}"}], "&"}], ",", 
+      RowBox[{"%", "//", "Transpose"}], ",", 
+      RowBox[{"{", "2", "}"}]}], "]"}]}], "\[IndentingNewLine]", "}"}], 
+  "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"Export", "[", 
+   RowBox[{
+    RowBox[{"name", "<>", "\"\<.pdf\>\""}], ",", " ", "%"}], "]"}], 
+  ";"}]}], "Input",
+ CellChangeTimes->{{3.4295255156344748`*^9, 3.4295256100752897`*^9}, {
+  3.429525668424567*^9, 3.429525701431078*^9}, {3.4295257441792383`*^9, 
+  3.429525776074698*^9}, {3.42952581227794*^9, 3.429526013044853*^9}, {
+  3.429526056248481*^9, 3.429526106095728*^9}, {3.4295261486201277`*^9, 
+  3.42952620070052*^9}, {3.429526237391334*^9, 3.429526285125404*^9}, {
+  3.429526325369093*^9, 3.429526584337331*^9}}]
+},
+WindowSize->{640, 750},
+WindowMargins->{{Automatic, 95}, {Automatic, 0}},
+ShowSelection->True,
+FrontEndVersion->"6.0 for Mac OS X x86 (32-bit) (June 19, 2007)",
+StyleDefinitions->"Default.nb"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[568, 21, 2076, 54, 193, "Input"]
+}
+]
+*)
+
+(* End of internal cache information *)
