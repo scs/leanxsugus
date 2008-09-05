@@ -155,15 +155,19 @@ void config_read()
 
 /*! @brief Initializes the configuration subsystem, mainly sets all the configuration variables to their default value. */
 void config_init() {
-	configuration.sort_color[0] = false;
-	configuration.sort_color[1] = false;
-	configuration.sort_color[2] = false;
-	configuration.sort_color[3] = false;
+	int i;
 	
-	configuration.count_color[0] = 0;
-	configuration.count_color[1] = 0;
-	configuration.count_color[2] = 0;
-	configuration.count_color[3] = 0;
+	for (i = 0; i < length (configuration.sort_color); i += 1)
+	{
+		configuration.count_color[i] = 0;
+		configuration.sort_color[i] = false;
+	}
 	
+	for (i = 0; i < length (configuration.valve_override); i += 1)
+		configuration.valve_override[i] = false;
+	
+	configuration.calibrating = false;
+	configuration.sort_unknown = false;
+	configuration.count_sorted = false;
 	configuration.count_sorted = 0;
 }
