@@ -51,7 +51,7 @@ function disableSelectionEverywhere() {
 		try {
 			element.onselectstart = function() {
 				return false;
-			};
+			}
 			element.unselectable = "on";
 			element.style.MozUserSelect = "none";
 		} catch (e) { }
