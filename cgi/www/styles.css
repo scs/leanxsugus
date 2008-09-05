@@ -77,6 +77,10 @@ body {
 	background-color: #bbb;
 }
 
+.aktiv:before {
+	content: "Aussortieren";
+}
+
 .aktiv#sort_color_0 {
 	color: #0a0;
 }
@@ -93,9 +97,17 @@ body {
 	color: #f00;
 }
 
-.inaktiv {
+.inaktiv, .header-backed {
 	background-color: #bbb;
 	color: #fff;
+}
+
+.inaktiv, .backed {
+	background-color: #bbb;
+}
+
+.inaktiv:before {
+	content: "Aussortieren";
 }
 
 .big-box {
