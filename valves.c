@@ -42,24 +42,27 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 {
 	int32 const time_begin = begin_time - valves.next_time + TUNE_VALVES_ON;
 	int32 const time_end = end_time - valves.next_time + TUNE_VALVES_OFF;
-	t_index i, j, ahead_begin, ahead_end = time_end / INTERVAL + 1;
+	t_index i, j, ahead_begin, ahead_end;
 	
 	if (time_begin < 0)
 		ahead_begin = 0;
 	else
 		ahead_begin = time_begin / INTERVAL;
 	
+	if (time_end < time_begin)
+		ahead_end = ahead_begin + 1;
+	else
+		ahead_end = time_end / INTERVAL + 1;
+	
 	printf("%d, %d, %lu, %lu\n", first_valve, last_valve, begin_time, end_time);
 	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
 	printf("%d, %d, %d, %d\n", begin_time, valves.next_time, TUNE_VALVES_ON, INTERVAL);
 	
 	assert (begin_time >= valves.next_time);
-	assert (end_time >= begin_time);
-	assert (ahead_begin >= 0);
 	assert (first_valve >= 0);
 	assert (last_valve < 16);
 	
-	/* The valves are adressed from the right to the left relative to the picture of the camera. */
+	/* The valves are addressed from the right to the left relative to the picture of the camera. */
 	for (i = ahead_begin; i < ahead_end; i += 1)
 		for (j = first_valve; j <= last_valve; j += 1)
 			valves.values[(valves.next_values + i) % VALUES_AHEAD][15 - j] = true;
