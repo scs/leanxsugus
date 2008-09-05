@@ -107,7 +107,7 @@ body {
 }
 
 .inaktiv:before {
-	content: "Aussortieren";
+	content: "Ignorieren";
 }
 
 .big-box {
