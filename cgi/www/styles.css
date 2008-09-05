@@ -7,9 +7,14 @@ body {
 	margin: 0;
 }
 
+.image {
+	padding: 15px;
+	padding-top: 25px;
+}
+
 .title {
-	margin-top: 45px;
-	margin-bottom: 45px;
+	padding-top: 45px;
+	padding-bottom: 50px;
 	text-align: center;
 	font-size: 36px;
 	font-weight: bold;
