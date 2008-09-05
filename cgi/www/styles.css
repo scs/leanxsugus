@@ -7,9 +7,28 @@ body {
 	margin: 0;
 }
 
+h2 {
+	font-size: 22px;
+	margin-left: 20px;
+	margin-right: 20px;
+	margin-top: 24px;
+	margin-bottom: 8px;
+}
+
+.prosa {
+	font-size: 17px;
+	margin-left: 20px;
+	margin-right: 20px;
+}
+
 .image {
 	padding: 15px;
 	padding-top: 25px;
+}
+
+.image-prosa {
+	float: center;
+	padding-top: 35px;
 }
 
 .title {
