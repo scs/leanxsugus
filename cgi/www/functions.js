@@ -9,7 +9,7 @@ function setElementClass(id, name) {
 	document.getElementById(id).className = name
 }
 
-/* This function does some magic to get an XMLHttpRequest object even in some archaic browsers. */
+// This function does some magic to get an XMLHttpRequest object even in some archaic browsers.
 function getHTTPObject() {
 	var xmlHttp;
 	
@@ -73,17 +73,12 @@ function onLoad() {
 	getStatistics();
 }
 
-function initConfig() {
-	configuration.sort_color_0 = false;
-	configuration.sort_color_1 = false;
-	configuration.sort_color_2 = false;
-	configuration.sort_color_3 = false;
-	
-	sendConfig("reset_counter");
-	sendConfig("sort_color_0", false);
-	sendConfig("sort_color_1", false);
-	sendConfig("sort_color_2", false);
-	sendConfig("sort_color_3", false);
+function initConfig() {	
+	configUnit_insist("reset_counter");
+	configBool_set("sort_color_0", false);
+	configBool_set("sort_color_1", false);
+	configBool_set("sort_color_2", false);
+	configBool_set("sort_color_3", false);
 }
 
 function initStatistics() {
@@ -98,6 +93,13 @@ function configBool_toggle(name) {
 	configuration[name] = ! configuration[name];
 	
 	sendConfig(name, configuration[name]);
+	updateInterface();
+}
+
+function configBool_set(name, value) {
+	configuration[name] = value;
+	
+	sendConfig(name, value);
 	updateInterface();
 }
 
