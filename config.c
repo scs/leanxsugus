@@ -1,3 +1,9 @@
+/*! @file config.c
+ * @brief Code used for interaction with the web-interface.
+ * 
+ * Thsi file defines functions to write the statistics file and read configuration updates from the configuration pipe.
+ */
+
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>

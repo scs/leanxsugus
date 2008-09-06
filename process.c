@@ -1,5 +1,7 @@
 /*! @file process.c
  * @brief Contains the actual algorithm and calculations.
+ *
+ * This file contains the main processing functionality of the application. These functions are responsible for recognizing and classifying the objects and generate events that are then sent to the valve subsystem.
  */
 
 #define ASSERTS_ENABLE

@@ -1,6 +1,8 @@
 /*!
  * @file main.c
  * @brief Main file of the template application. Mainly contains initialization code.
+ *
+ * This file defines the main funtion and helper function that initialize the application. It also contains the main loop that defines the processing cycle of the application.
  */
 
 /*!

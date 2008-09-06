@@ -1,5 +1,7 @@
 /*! @file valves.c
  * @brief Contains function to handle the valves with support of the modbus component.
+ *
+ * This file defines functions to manipulate the valve ring-buffer and send updates to the modbus interface at the right time.
  */
 
 #include <unistd.h>

@@ -1,5 +1,7 @@
 /*! @file modbus.c
- * @brief Contails functions to controll a modbus controller.
+ * @brief Contails functions to controll a modbus buscoupler.
+ *
+ * This file defines functions to drive the modbus interface. These function may be used to send messages to a modbus buscoupler
  */
 
 #include <sys/types.h>
