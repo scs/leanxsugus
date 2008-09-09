@@ -56,10 +56,6 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	else
 		ahead_end = time_end / INTERVAL + 1;
 	
-	printf("%d, %d, %lu, %lu\n", first_valve, last_valve, begin_time, end_time);
-	printf("%d, %d, %d, %d\n", first_valve, last_valve, ahead_begin, ahead_end);
-	printf("%d, %d, %d, %d\n", begin_time, valves.next_time, TUNE_VALVES_ON, INTERVAL);
-	
 	assert (begin_time >= valves.next_time);
 	assert (first_valve >= 0);
 	assert (last_valve < 16);
