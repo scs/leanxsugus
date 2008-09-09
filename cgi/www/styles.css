@@ -146,9 +146,9 @@ h2 {
 .big-box {
 	margin: 10px;
 	padding: 10px;
-	border-width: 1px;
+	border-width: 2px;
 	border-style: solid;
-	border-color: #d00;
+	border-color: #e00;
 }
 
 h3 {
