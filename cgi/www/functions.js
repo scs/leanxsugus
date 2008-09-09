@@ -85,7 +85,7 @@ function onLoad() {
 
 // This initializes the configuration object and sends all default values to the camera.
 function initConfig() {	
-	configUnit_insist("reset_counter");
+	configUnit_insist("reset_counters");
 	configBool_set("sort_color_0", false);
 	configBool_set("sort_color_1", false);
 	configBool_set("sort_color_2", false);

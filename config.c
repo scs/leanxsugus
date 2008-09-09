@@ -147,7 +147,7 @@ void config_read()
 	{	/* There was no equals sign. */
 		printf("%s\n", buf);
 		
-		if (strcmp(buf, "reset_counter") == 0)
+		if (strcmp(buf, "reset_counters") == 0)
 		{
 			configuration.count_color[0] = 0;
 			configuration.count_color[1] = 0;
