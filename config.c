@@ -164,13 +164,15 @@ void config_init() {
 	int i;
 	
 	for (i = 0; i < length (configuration.sort_color); i += 1)
-	{
 		configuration.count_color[i] = 0;
-		configuration.sort_color[i] = false;
-	}
 	
 	for (i = 0; i < length (configuration.valve_override); i += 1)
 		configuration.valve_override[i] = false;
+	
+	configuration.sort_color[0] = false;
+	configuration.sort_color[1] = false;
+	configuration.sort_color[2] = true;
+	configuration.sort_color[3] = true;
 	
 	configuration.calibrating = false;
 	configuration.sort_unknown = false;
