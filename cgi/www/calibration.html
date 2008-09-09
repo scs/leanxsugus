@@ -17,7 +17,7 @@
 			
 			function refreshImage() {
 				counter += 1;
-				document.getElementById("image").src = "/image.bmp?" + counter;
+				document.getElementById("image").src = "images/live.bmp?" + counter;
 				
 				setTimeout("refreshImage()", 250);
 			}
@@ -25,7 +25,7 @@
 	</head>
 	<body onload="onLoad();">
 		<div class="big-box" style="height: 100%; text-align: center; vertical-align:x middle;">
-			<img id="image" src="/image.bmp">
+			<img id="image" src="images/live.bmp">
 		</div>
 	</body>
 	<div class="button-left" onclick="back();">
