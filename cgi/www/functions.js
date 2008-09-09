@@ -125,7 +125,6 @@ function sendConfig(name, value) {
 	
 	// Send the message over an asynchronous HTTP POST request.
 	xmlHttp.open('POST', '/cgi-bin/config.cgi', true);
-	xmlHttp.setRequestHeader("Content-length", message.length);
 	xmlHttp.send(message);
 }
 

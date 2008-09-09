@@ -5,8 +5,15 @@
 	<head>
 		<title>LeanXsugus WebGUI</title>
 		<link rel="stylesheet" type="text/css" href="styles.css" />
+		<script src="functions.js" type="text/javascript"></script>
 		<script type="text/javascript">
 			var counter = 0;
+			
+			function onLoad() {
+				disableSelectionEverywhere();
+				configBool_set("calibrating", true);
+				refreshImage();
+			}
 			
 			function refreshImage() {
 				counter += 1;
@@ -16,7 +23,13 @@
 			}
 		</script>
 	</head>
-	<body onload="refreshImage();">
-		<img id="image" src="/image.bmp">
+	<body onload="onLoad();">
+		<div class="big-box" style="height: 100%; text-align: center; vertical-align:x middle;">
+			<img id="image" src="/image.bmp">
+		</div>
+		<div class="button-left" onclick="back();">
+			<img src="images/icon-back.png" style="position: relative; top: 7px; padding-right: 5px;" />
+			Zurück
+		</div>
 	</body>
 </html>
