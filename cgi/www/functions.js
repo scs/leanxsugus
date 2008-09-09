@@ -40,7 +40,6 @@ function getHTTPObject() {
 	return xmlHttp;
 }
 
-
 // This function tries to inhibit selection of text by the user. It's a bit of magic and does not work everywhere.
 function disableSelectionEverywhere() {
 	// This function returns a list of all nodes recursively contained by the given node.
@@ -72,20 +71,10 @@ function disableSelectionEverywhere() {
 		disableSelection(nodes[i]);
 }
 
-// This function is called by the main page when it is loaded. It initializes the configuration ans statistics ojects.
-function onLoad() {
-	disableSelectionEverywhere();
-	
-	initConfig();
-	initStatistics();
-	
-	updateInterface();
-	getStatistics();
-}
-
 // This initializes the configuration object and sends all default values to the camera.
 function initConfig() {	
 	configUnit_insist("reset_counters");
+	configBool_set("calibrating", false);
 	configBool_set("sort_color_0", false);
 	configBool_set("sort_color_1", false);
 	configBool_set("sort_color_2", false);
