@@ -1,0 +1,105 @@
+; Code Composer Project File, Version 2.0 (do not modify or remove this line)
+
+[Project Settings]
+ProjectName="FlexiVision"
+ProjectDir="C:\Projects\Akquisition\DemoSorter_sugus\DSP\Flexivision\"
+ProjectType=Executable
+CPUFamily=TMS320C64XX
+Tool="Compiler"
+Tool="DspBiosBuilder"
+Tool="Linker"
+Config="Debug"
+Config="Release"
+
+[Source Files]
+Source="C:\ti\c6400\imglib\lib\img64x.lib"
+Source="classBeckhoffBusCoupler.cpp"
+Source="classBufferFifo.cpp"
+Source="classBusCoupler.cpp"
+Source="classControl.cpp"
+Source="classImageProcessing.cpp"
+Source="classModbusBusCoupler.cpp"
+Source="classOutputChannel.cpp"
+Source="classOutputDispatcher.cpp"
+Source="classProfiler.cpp"
+Source="classStaticString.cpp"
+Source="classStatus.cpp"
+Source="classViewChannel.cpp"
+Source="classVision.cpp"
+Source="classWatchdog.cpp"
+Source="classWrapper.cpp"
+Source="drvConveyor.c"
+Source="drvHighResTimer.c"
+Source="drvHPI.c"
+Source="drvPPU.c"
+Source="drvPPUSerial.c"
+Source="flexivision.cdb"
+Source="libBufferQueue.c"
+Source="libDebug.cpp"
+Source="libEDMAManager.c"
+Source="libHelpers.c"
+Source="libLED.c"
+Source="libPicture.c"
+Source="libRingBuffer.c"
+Source="main.c"
+Source="tskControl.c"
+Source="tskImageProcessing.c"
+Source="tstEDMAManager.c"
+Source="vision\classVisBufferManager.cpp"
+Source="vision\classVisCameraTransform.cpp"
+Source="vision\classVisCamPlaneTransform.cpp"
+Source="vision\classVisClip.cpp"
+Source="vision\classVisColor.cpp"
+Source="vision\classVisColorPick.cpp"
+Source="vision\classVisColorPickVisualizer.cpp"
+Source="vision\classVisComponent.cpp"
+Source="vision\classVisDemoSorterClassifier.cpp"
+Source="vision\classVisDemoSorterModel.cpp"
+Source="vision\classVisFastLabel.cpp"
+Source="vision\classVisFixpoint.cpp"
+Source="vision\classVisFramegrabber.cpp"
+Source="vision\classVisGraphics.cpp"
+Source="vision\classVisInputPort.cpp"
+Source="vision\classVisKeypointsCut.cpp"
+Source="vision\classVisLabelVisualizer.cpp"
+Source="vision\classVisMatrix.cpp"
+Source="vision\classVisModelVisualizer.cpp"
+Source="vision\classVisMorphology.cpp"
+Source="vision\classVisObject.cpp"
+Source="vision\classVisObjectManager.cpp"
+Source="vision\classVisOutputPort.cpp"
+Source="vision\classVisPort.cpp"
+Source="vision\classVisPPUSim.cpp"
+Source="vision\classVisProperty.cpp"
+Source="vision\classVisRGBToGray.cpp"
+Source="vision\classVisThreshold.cpp"
+Source="vision\classVisTransform.cpp"
+Source="vision\classVisVector.cpp"
+Source="vision\classVisVision.cpp"
+Source="flexivision.cmd"
+
+[Generated Files]
+Source="flexivisioncfg.s62"
+Source="flexivisioncfg_c.c"
+
+["Release" Settings]
+FinalBuildCmd=Release\makehex
+
+["Compiler" Settings: "Debug"]
+Options=-g -k -q -pdr -fr"C:\Projects\Akquisition\DemoSorter_sugus\DSP\Flexivision\Debug" -fs"C:\Projects\Akquisition\DemoSorter_sugus\DSP\Flexivision\Asm" -i"C:\ti\c6400\dsplib\include" -i"C:\ti\c6400\imglib\include" -d"_DEBUG" -d"_SIMULATE" -ml1 -mr1 -ms3 -mv6400
+
+["Compiler" Settings: "Release"]
+Options=-k -q -s -al -as -o3 -fr"C:\Projects\Akquisition\DemoSorter_sugus\DSP\Flexivision\Release" -fs"C:\Projects\Akquisition\DemoSorter_sugus\DSP\Flexivision\asm" -i"c:\ti\c6400\dsplib\include" -i"c:\ti\c6400\imglib\include" -mv6400
+
+["DspBiosBuilder" Settings: "Debug"]
+Options=-v6x
+
+["DspBiosBuilder" Settings: "Release"]
+Options=-v6x
+
+["Linker" Settings: "Debug"]
+Options=-q -c -o".\Debug\FlexiVision.out" -x -l"c:\ti\c6400\imglib\lib\img64x.lib" -l"c:\ti\c6400\dsplib\lib\dsp64x.lib"
+
+["Linker" Settings: "Release"]
+Options=-q -c -m".\Release\FlexiVision.map" -o".\Release\FlexiVision.out" -x -l"c:\ti\c6400\imglib\lib\img64x.lib" -l"c:\ti\c6400\dsplib\lib\dsp64x.lib"
+

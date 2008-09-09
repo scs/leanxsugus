@@ -1,0 +1,22 @@
+You need 3 packages:
+ - doxygen: www.doxygen.org
+ - graphviz: www.graphviz.org/
+ - MS Help Workshop (only when wanted): 
+     http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp
+     (or google search "htmlhelp.exe")
+
+(1) Make sure that the path environment variable contains the path of the graphviz and help workshop executables (The latter won't do that by itself).
+
+(2) Run Doxywizard (installed with doxygen)
+
+(3) Load the dwstest.dox
+
+(4) Run it by pressing the icon in the toolbar.
+
+(5) wait
+
+The resulting documentation files can now be found in:
+  dwstest_html:	The html (index.html) and MS help version (dwstest.chm)
+  dwstest_rtf:  The RTF version (refman.rtf).
+
+To use the RTF version, you first have to update all fields: load the refman.rtf file, press ctrl+A to select all and press F9.

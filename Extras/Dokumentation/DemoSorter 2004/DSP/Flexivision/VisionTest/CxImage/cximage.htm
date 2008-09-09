@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0084)http://www.codeproject.com/script/Submit/ViewHTML.asp?guid=%2Fbitmap%2FCXImage%2Easp -->
+<!-- HTML for article "CxImage" by Davide Pizzolato,Davide Pizzolato
+     URL: http://www.codeproject.com/bitmap/cximage.asp
+
+     Article content copyright Davide Pizzolato,Davide Pizzolato
+     All formatting, additions and alterations Copyright © CodeProject, 2003
+--><!----------------------------- Ignore -----------------------------><HTML><HEAD>
+<META http-equiv=Content-Type content="text/html; charset=windows-1252"><LINK 
+href="ViewHTML_file/global.css" type=text/css rel=stylesheet>
+<META content="MSHTML 6.00.2800.1126" name=GENERATOR></HEAD>
+<BODY>
+<P><b>
+  <H2>CxImage</h2>
+  </b><p></P>
+<P><IMG height=456 alt="" src="cximage.png" width=631></P>
+<H2>Introduction</H2>
+<P><CODE>CxImage</CODE> is a C++ class to manage virtually any kind of images. 
+It can load, save, display, transform images in a very simple and fast way. 
+</p>
+<P><i>Why another image library?</i> Around there are many good libraries (OpenIL, 
+  FreeImage, PaintLib ...), these are powerful, complete, and constantly updated. 
+  However if you ever try to use them, you may find some difficulties; because 
+  these libraries are mainly platform independent, written in C, sometimes with 
+  a basic C++ wrapper and with tons of compiler switch declarations. Now with 
+  the new GDI+ classes on the scene, maybe CxImage isn't so useful, but at least 
+  here you have the source code. It is not a MFC library, altogether it's a windows 
+  library, because of some particular constructors and the painting functions, 
+  but the backbone is platform independent.</P>
+<ul>
+  <li><a href="#License">License</a></li>
+  <li><a href="#news">What's new</a></li>
+  <li><a href="#structure">CxImage structure</a></li>
+  <li><a href="#members">Class members &amp; operations</a></li>
+  <li><a href="#options">Supported formats and options</a></li>
+  <li><a href="#projects">Using CxImage in your projects</a></li>
+  <li><a href="#custom">Adding your custom functions in CxImage</a></li>
+  <li><a href="#examples">Examples</a></li>
+  <li><a href="#history">History &amp; credits</a></li>
+</ul>
+<H2>License<a name="License"></a></H2>
+<P>The class CxImage is <B>free</B>; as for the TIFF, JPEG, PNG and ZLIB libraries 
+  : "<i>If you use this source code in a product, acknowledgment is not required 
+  but would be appreciated.</i>"</P>
+<P>Most of the graphic formats available with CxImage are free and don't require 
+  a license. The exceptions are:</P>
+<ul>
+  <li><b>JBG</b> : the Jbg library is distributed under the GPL license, and some 
+    of its algorithms are patented.</li>
+  <li><b>GIF</b> : the LZW algorithm is patented by Unisys. The TIFF library is 
+    also partially affected by this.<br>
+    With the release 5.00, CxImage uses RLE compression as default for GIF images, 
+    it is less efficient but it's free; the other options are "lzw" and "uncompressed". 
+    CxImage can also read and write truecolor images with the GIF format, it is 
+    an useless option, because the result is larger than a BMP, just try it if 
+    you are curious, IE5 loads correctly this format.</li>
+</ul>
+<p>With <code>CxImage</code> it's a simple operation to remove a specific format, 
+  you are free to make your choice.</p>
+<H2>What's new in version 5.71<a name="news"></a></H2>
+<UL>
+  <li>See file 'history.htm' for the complete list. 
+  <li>new formats: JP2, JPC, PGX, PNM, RAS (through JasPer) 
+  <li>new functions: <code>Jitter</code>, <code>Skew</code> 
+  <li>fixed RGB2GRAY macro, and <code>RotateLeft</code>, <code>RotateRight</code> 
+    function for 1 bpp images 
+  <li>fixed <code>SelectionAddPolygon</code> when the polygon touches the image 
+    borders. 
+  <li>fixed EXIF reader. 
+  <li>CxImageBMP now reads OS2 bitmaps<code>.</code> 
+  <li>CxImageTIF::EncodeBody : better error handling, and switch for different 
+    compression tags. 
+  <li>new CxImageCrtDll.dsp project, to build a dll without mfc. 
+  <li>... </li>
+</UL>
+<H2>CxImage structure<a name="structure"></a></H2>
+<P>In the vertical hierarchy of the library, CxImage stays on the top of the other 
+  modules, it's not a clean OOP approach, but the result was good since the first 
+  release and now it's too late to change again. Anyway you can always use the 
+  derived classes to perform the format specific operations, like for <code>CxImageTIF</code> 
+  to save multipage TIFFs.<br>
+  The glue to connect all the modules and the C libraries is <code>CxFile</code>, 
+  a virtual class that provides the standard methods to access the data from a 
+  file on the disk or in memory.</P>
+<p>&nbsp;<img height=126 alt="" src="structure.png" 
+width=693></p>
+<P>A Cximage object is basically a bitmap, with the addition of some member variables 
+  to store useful information:</P>
+<P></P>
+<PRE> class CxImage
+  {
+  ...
+  protected:
+  void* pDib;            //contains the header, the palette, the pixels
+  BITMAPINFOHEADER head; //standard header
+  CXIMAGEINFO info;      //extended information
+  BYTE* pSelection;      //selected region
+  BYTE* pAlpha;          //alpha channel
+  CxImage** pLayers;     //generic layers
+  }</PRE>
+<P><CODE>CxImage::head</CODE> is the bitmap header and 
+<CODE>CxImage::pDib</CODE> is a normal bitmap (as you can see in the 
+implementation of 
+<CODE>CxImageBMP::Encode</CODE>).<BR>
+  <CODE>CxImage::info</CODE> is a handy container of many information shared between 
+  different formats, and for all the member functions.</P>
+<PRE>typedef struct tagCxImageInfo {
+    DWORD   dwEffWidth;       //DWORD aligned scan line width
+    BYTE*   pImage;           //THE IMAGE BITS
+    void*   pGhost;           //if this is a ghost, pGhost point to the body
+    DWORD   dwType;           //original image format
+    char    szLastError[256]; //debugging
+    long    nProgress;        //monitor
+    long    nEscape;          //escape
+    long    nBkgndIndex;      //used for GIF, PNG, MNG
+    RGBQUAD nBkgndColor;      //used for RGB transparency
+    BYTE    nQuality;         //used for JPEG
+    long    nFrame;           //used for TIF, GIF, MNG : actual frame
+    long    nNumFrames;       //used for TIF, GIF, MNG : total number of frames
+    DWORD   dwFrameDelay;     //used for GIF, MNG
+    long    xDPI;             //horizontal resolution
+    long    yDPI;             //vertical resolution
+    RECT    rSelectionBox;    //bounding rectangle
+    BYTE    nAlphaMax;        //max opacity (fade)
+    bool    bAlphaPaletteEnabled;  //true if alpha values in the palette are enabled.
+    bool    bEnabled;         //enables the painting functions
+    long    xOffset;
+    long    yOffset;
+    DWORD   dwEncodeOption;   //for GIF, TIF : 0=def.1=unc,2=fax3,3=fax4,4=pack,5=jpg
+    RGBQUAD last_c;           //for GetNearestIndex optimization
+    BYTE    last_c_index;
+    bool    last_c_isvalid;
+    long    nNumLayers;<br>    DWORD   dwFlags;<br>} CXIMAGEINFO;</PRE>
+<table width="100%" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td> 
+      <p>A CxImage object is also a set of layers. The buffers in each layer are 
+        allocated only when necessary.</p>
+      <p><code>CxImage::pDib</code> is the background image. <code>CxImage::pAlpha</code> 
+        is the transparency layer. <code>CxImage::pSelection</code> is the selection 
+        layer, used to create regions of interest for image processing.<br>
+        Over these 3 specific planes, you can add other generic layers, stored 
+        in <code>CxImage::pLayers</code>. The generic layers are full <code>CxImage</code> 
+        objects, so you can build complex structures of nested layers.</p>
+    </td>
+    <td valign="top"><img src="layers.jpg" width="486" height="177"></td>
+  </tr>
+</table>
+<H2>CxImage Class Members &amp; Operations<a name="members"></a></H2>
+<A 
+href="http://www.aoi.it/cximage_reference.htm">CxImage Class Members &amp; Operations</A> 
+[<A href="http://www.aoi.it/cximage_reference.htm" 
+target=_blank>^</A>] 
+<H2>Supported formats and options<a name="options"></a></H2>
+<P>The whole library is quite big, in the main header file<b> <i>ximage.h</i></b> 
+  you'll find the switches to enable or disable a specific graphic format or feature. 
+  Each JPG, PNG and TIFF library adds about 100KB to the final application, while 
+  the<CODE> CxImage</CODE> impact is about 50KB. So you should support and link 
+  only the formats that your application really needs.</P>
+<table width="100%" border="1" cellspacing="0" cellpadding="2">
+  <tr> 
+    <td width="43%"><b>formats</b></td>
+    <td width="20%"><b>#define</b></td>
+    <td width="27%"><b>required libraries</b></td>
+    <td width="10%"><b>size [Kbyte]</b></td>
+  </tr>
+  <tr> 
+    <td width="43%">BMP<br>
+      GIF<br>
+      ICO<br>
+      TGA<br>
+      PCX<br>
+      WBMP<br>
+      WMF<br>
+    </td>
+    <td width="20%"> CXIMAGE_SUPPORT_BMP<br>
+      CXIMAGE_SUPPORT_GIF<br>
+      CXIMAGE_SUPPORT_ICO<br>
+      CXIMAGE_SUPPORT_TGA<br>
+      CXIMAGE_SUPPORT_PCX<br>
+      CXIMAGE_SUPPORT_WBMP<br>
+      CXIMAGE_SUPPORT_WMF<br>
+    </td>
+    <td width="27%"> 
+      <div align="center">built in</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">24</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">JPEG</td>
+    <td width="20%"> CXIMAGE_SUPPORT_JPG<br>
+    </td>
+    <td width="27%"> 
+      <div align="center">jpeg</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">88</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">PNG</td>
+    <td width="20%"> CXIMAGE_SUPPORT_PNG<br>
+    </td>
+    <td width="27%"> 
+      <div align="center">png, zlib</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">104</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">MNG</td>
+    <td width="20%"> CXIMAGE_SUPPORT_MNG<br>
+    </td>
+    <td width="27%"> 
+      <div align="center">mng, zlib, jpeg</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">148</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">TIFF</td>
+    <td width="20%"> CXIMAGE_SUPPORT_TIF<br>
+    </td>
+    <td width="27%"> 
+      <div align="center">tiff, zlib, jpeg</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">124</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">JBIG</td>
+    <td width="20%">CXIMAGE_SUPPORT_JBG</td>
+    <td width="27%"> 
+      <div align="center">jbig</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">28</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">PNM,PPM,PGM<br>
+      RAS </td>
+    <td width="20%"> CXIMAGE_SUPPORT_PNM<br>
+      CXIMAGE_SUPPORT_RAS</td>
+    <td width="27%"> 
+      <div align="center">jasper</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">176</div>
+    </td>
+  </tr>
+  <tr> 
+    <td width="43%">JPEG-2000<br>
+    </td>
+    <td width="20%"> CXIMAGE_SUPPORT_JP2<br>
+      CXIMAGE_SUPPORT_JPC<br>
+      CXIMAGE_SUPPORT_PGX<br>
+    </td>
+    <td width="27%"> 
+      <div align="center">jasper</div>
+    </td>
+    <td width="10%"> 
+      <div align="center">176</div>
+    </td>
+  </tr>
+</table>
+<br>
+<TABLE cellSpacing=0 width="100%" border=1 cellpadding="2">
+  <TBODY> 
+  <TR> 
+    <td width="43%"><b>Option</b></td>
+    <TD width="47%"><b>#define</b></TD>
+    <TD width="10%"><B>Size [Kbyte]</B></TD>
+  </TR>
+  <TR> 
+    <td width="43%">CxImage core</td>
+    <TD width="47%">all switches off</TD>
+    <TD width="10%">20</TD>
+  </TR>
+  <TR> 
+    <td width="43%" height="13"> geometric transformations</td>
+    <td width="47%" height="13"> CXIMAGE_SUPPORT_TRANSFORMATION</td>
+    <TD width="10%" height="13">16</TD>
+  </TR>
+  <TR> 
+    <td width="43%">image processing</td>
+    <td width="47%">CXIMAGE_SUPPORT_DSP</td>
+    <TD width="10%">24</TD>
+  </TR>
+  <TR> 
+    <td width="43%">drawing and windows specific functions</td>
+    <td width="47%">CXIMAGE_SUPPORT_WINDOWS</td>
+    <TD width="10%">12</TD>
+  </TR>
+  <TR> 
+    <td width="43%">transparency</td>
+    <td width="47%">CXIMAGE_SUPPORT_ALPHA</td>
+    <TD width="10%">4</TD>
+  </TR>
+  <TR> 
+    <td width="43%">selections</td>
+    <td width="47%">CXIMAGE_SUPPORT_SELECTION</td>
+    <TD width="10%">4</TD>
+  </TR>
+  <TR> 
+    <td width="43%">multiple layers</td>
+    <td width="47%">CXIMAGE_SUPPORT_LAYERS</td>
+    <TD width="10%"> &lt; 4</TD>
+  </TR>
+  <TR> 
+    <td width="43%">graphic formats conversion<br>
+    </td>
+    <td width="47%">CXIMAGE_SUPPORT_DECODE<br>
+      CXIMAGE_SUPPORT_ENCODE </td>
+    <TD width="10%">&lt; 4</TD>
+  </TR>
+  </TBODY> 
+</TABLE>
+<H2>Using CxImage in your projects<a name="projects"></a></H2>
+<TABLE width="100%" border=0>
+  <TBODY>
+  <TR> 
+    <TD vAlign=top> 
+      <p>The <b>CxImgLib.dsw</b> workspace shows the libraries required to build 
+        an application (demo.exe) including almost all the features and the formats 
+        available in CxImage. You must compile all the libraries before you can 
+        link the final application.<br>
+        In the same workspace you'll find the projects to build different libraries 
+        and applications:</p>
+      <ul>
+        <li>CxImage : <i>cximage.lib</i> - static library</li>
+        <li>CxImageCrtDll : <i>cximagecrt.dll</i> - DLL not using mfc</li>
+        <li>CxImageMfcDll : <i>cximage.dll</i> - DLL using mfc</li>
+        <li>Demo : <i>demo.exe</i> - program linked with <i>cximage.lib </i> and 
+          the C libraries</li>
+        <li>DemoDll : <i>demodll.exe</i> - program linked with <i>cximagecrt.dll</i></li>
+        <li>j2k,jasper,jbig,jpeg,png,tiff,zlib : static C libraries</li>
+      </ul>
+      <p>Building the projects will need some minutes to complete (the intermediate 
+        files occupy 60MB!). When everything is done, select the demo project 
+        and launch the application.</p>
+    </TD>
+    <TD><b>CxImgLib.dsw</b><br>
+      <img src="tree.png" width="151" height="193"></TD>
+  </TR></TBODY></TABLE>
+<P>To use CxImage in your project, you must edit these settings: 
+<PRE>Project Settings<br> |- C/C++<br> |   |- Code Generation<br> |   |   |- Use run-time library : Multithreaded DLL (must be the same for all the linked libraries)
+ |   |   |- Struct member alignment : must be the same for all the linked libraries<br> |   |- Precompiled headers : not using precompiled headers<br> |   |- Preprocessor<br> |       |- Additional Include Directories:  ..\cximage<br> |- Link<br>    |- General<br>        |- Object/library modules: ../png/Debug/png.lib ../jpeg/Debug/jpeg.lib ../zlib/Debug/zlib.lib ../tiff/Debug/tiff.lib ../cximage/Debug/cximage.lib  ...</PRE>
+<P> 
+  <H2>Adding your custom functions in CxImage<a name="custom"></a></h2>
+<P>Writing a new function for image processing is not so hard with CxImage. Here 
+  I'm going to describe <code>CxImage::Jitter</code>, it's very simple but it 
+  shows many aspects to take care when you work inside CxImage. The first thing, 
+  of course, is the declaration : <code>bool Jitter(long radius=2);</code> in 
+  the CXIMAGE_SUPPORT_DSP section of ximage.h, you can declare the function everywhere 
+  in the <code>public</code> scope of the class. And now the definition: 
+<pre>bool CxImage::Jitter(long radius)
+{
+	// check if the image is valid, this should be always the first line in the function
+	if (!pDib) return false;
+	
+	// local variables
+	long nx,ny;
+	
+	// temporary image to store the partial results of the algorithm
+	CxImage tmp(*this,pSelection!=0,true,true);
+	
+	// limit the effects of the functions only in the smallest rectangle that
+	// holds the selected region (defined with the Selection...() functions ),
+	// this will speed up the loops.
+	long xmin,xmax,ymin,ymax;
+	if (pSelection){
+		xmin = info.rSelectionBox.left; xmax = info.rSelectionBox.right;
+		ymin = info.rSelectionBox.bottom; ymax = info.rSelectionBox.top;
+	} else {
+		xmin = ymin = 0;
+		xmax = head.biWidth; ymax=head.biHeight;
+	}
+	
+	// main loop : scan the image in vertical direction
+	for(long y=ymin; y &lt;ymax; y++){
+	
+		// monitor the progress of the loops
+		info.nProgress = (long)(100*y/head.biHeight);
+	
+		// let the application a way to exit quickly
+		if (info.nEscape) break;
+	
+		// main loop : scan the image in horizontal direction
+		for(long x=xmin; x&lt;xmax; x++){
+	
+		// if the feature is enabled, process only the pixels inside the selected region
+#if CXIMAGE_SUPPORT_SELECTION
+			if (SelectionIsInside(x,y))
+#endif //CXIMAGE_SUPPORT_SELECTION
+			{
+				// main algorithm
+				nx=x+(long)((rand()/(float)RAND_MAX - 0.5)*(radius*2));
+				ny=y+(long)((rand()/(float)RAND_MAX - 0.5)*(radius*2));
+				if (!IsInside(nx,ny)) {
+					nx=x;
+					ny=y;
+				}
+
+				// save the result in the temporary image.
+				// if you can, use PixelColor only for 24 bpp images,
+				// and PixelIndex for 8, 4 and 1 bpp images : it's faster
+				if (head.biClrUsed==0){
+					tmp.SetPixelColor(x,y,GetPixelColor(nx,ny));
+				} else {
+					tmp.SetPixelIndex(x,y,GetPixelIndex(nx,ny));
+				}
+
+				// if the feature is enabled, process also the pixels in the alpha layer
+#if CXIMAGE_SUPPORT_ALPHA
+				tmp.AlphaSet(x,y,AlphaGet(nx,ny));
+#endif //CXIMAGE_SUPPORT_ALPHA
+			}
+		}
+	}
+
+	// save the result and exit
+	Transfer(tmp);
+	return true;
+}
+</pre>
+<P><BR>
+<H2>Examples: how to ...<a name="examples"></a></H2>
+<H2>... convert from a format to another</H2>
+<pre>
+CxImage  image;
+// bmp -&gt; jpg
+image.Load(&quot;image.bmp&quot;, CXIMAGE_FORMAT_BMP);
+if (image.IsValid()){
+	if(!image.IsGrayScale()) image.IncreaseBpp(24);
+	image.SetJpegQuality(99);
+	image.Save(&quot;image.jpg&quot;,CXIMAGE_FORMAT_JPG);
+}
+// png -&gt; tif
+image.Load(&quot;image.png&quot;, CXIMAGE_FORMAT_PNG);
+if (image.IsValid()){
+	image.Save(&quot;image.tif&quot;,CXIMAGE_FORMAT_TIF);
+}
+</pre>
+<H2>... load an image resource</H2>
+<PRE>//Load the resource IDR_PNG1 from the PNG resource type
+CxImage* newImage = new CxImage();
+newImage-&gt;LoadResource(FindResource(NULL,MAKEINTRESOURCE(IDR_PNG1),
+                       "PNG"),CXIMAGE_FORMAT_PNG);</PRE>or<PRE>//Load the resource IDR_JPG1 from DLL
+CxImage* newImage = new CxImage();
+HINSTANCE hdll=LoadLibrary("imagelib.dll");
+if (hdll){
+    HRSRC hres=FindResource(hdll,MAKEINTRESOURCE(IDR_JPG1),"JPG");
+    newImage-&gt;LoadResource(hres,CXIMAGE_FORMAT_JPG,hdll);
+    FreeLibrary(hdll);
+}</PRE>or<PRE>//Load a bitmap resource;
+HBITMAP bitmap = ::LoadBitmap(AfxGetInstanceHandle(),<BR>                              MAKEINTRESOURCE(IDB_BITMAP1)));
+CxImage *newImage = new CxImage();
+newImage-&gt;CreateFromHBITMAP(bitmap);</PRE>
+<H2>... decode an image from memory</H2><PRE>CxImage image((BYTE*)buffer,size,image_type);</PRE>or<PRE>CxMemFile memfile((BYTE*)buffer,size);
+CxImage image(&amp;memfile,image_type);</PRE>or<PRE>CxMemFile memfile((BYTE*)buffer,size);
+CxImage* image = new CxImage();
+image-&gt;Decode(&amp;memfile,type);</PRE>
+<H2>... encode an image in memory</H2><PRE>long size=0;
+BYTE* buffer=0;
+image.Encode(buffer,size,image_type);
+...
+free(buffer);</PRE>or<PRE>CxMemFile memfile;
+memfile.Open();
+image.Encode(&amp;memfile,image_type);
+BYTE* buffer = memfile.GetBuffer();
+long size = memfile.Size();
+...
+free(buffer);</PRE>
+<H2>... create a multipage TIFF</H2><PRE>CxImage *pimage[3];
+pimage[0]=&amp;image1;
+pimage[1]=&amp;image2;
+pimage[2]=&amp;image3;
+
+FILE* hFile;
+hFile = fopen("multipage.tif","w+b");
+
+CxImageTIF multiimage;
+multiimage.Encode(hFile,pimage,3);
+
+fclose(hFile);</PRE>or<PRE>FILE* hFile;
+hFile = fopen("c:\\multi.tif","w+b");
+
+CxImageTIF image;
+image.Load("c:\\1.tif",CXIMAGE_FORMAT_TIF);
+image.Encode(hFile,true);
+image.Load("c:\\2.bmp",CXIMAGE_FORMAT_BMP);
+image.Encode(hFile,true);
+image.Load("c:\\3.png",CXIMAGE_FORMAT_PNG);
+image.Encode(hFile);
+
+fclose(hFile);
+</PRE>
+<H2>... copy/paste an image</H2><PRE>//copy
+HANDLE hDIB = image-&gt;CopyToHandle();
+if (::OpenClipboard(AfxGetApp()-&gt;m_pMainWnd-&gt;GetSafeHwnd())) {
+    if(::EmptyClipboard()) {
+        if (::SetClipboardData(CF_DIB,hDIB) == NULL ) {
+            AfxMessageBox( "Unable to set Clipboard data" );
+}    }    }
+CloseClipboard();
+
+//paste
+HANDLE hBitmap=NULL;
+CxImage *newima = new CxImage();
+if (OpenClipboard()) hBitmap=GetClipboardData(CF_DIB);
+if (hBitmap) newima-&gt;CreateFromHANDLE(hBitmap);
+CloseClipboard();</PRE>
+<H2>... display a file in a picture box</H2><PRE>CxImage image("myfile.png", CXIMAGE_FORMAT_PNG);
+HBITMAP m_bitmap = image.MakeBitmap(m_picture.GetDC()-&gt;m_hDC);
+m_picture.SetBitmap(m_bitmap);
+</PRE>
+<H2>History and credits.<a name="history"></a></H2>
+<P>Starting form my <CODE>CxDib</CODE> class, that implements memory DIBs only, 
+  I tried to add some members to read images from files. Looking for a solution, 
+  I found a nice MFC class named <CODE>CImage</CODE> on the net, release 1.4 (1998). 
+  <CODE>CImage</CODE> supports BMP, GIF, PNG and JPG, but suffers many little 
+  bugs and uses a complex class structure, so I decided to strip it to the base 
+  and merge <CODE>CxDib</CODE> with the <CODE>CImage</CODE> philosophy, to obtain 
+  the new <CODE>CxImage</CODE> class. Also I updated the libraries for JPG, PNG 
+  and ZLIB.<BR>
+  With <CODE>CxImage</CODE> is very easy to add new image types, so I added the 
+  TIFF library (rev. 6) and a minimal support for <CODE>ICON</CODE>s, MNG, TGA 
+  and PCX. Finally I added some specific functions to obtain an image from global 
+  <CODE>HANDLE</CODE>s (windows clipboard) and objects (windows resources).<br>
+  With the release 5, CxImage has now a good support for memory files, new methods 
+  and file formats, and it is more portable: it works also with <A 
+href="http://www.codeproject.com/ce/png__jpg__etc_on_pocketpc.asp">WinCE</A> and 
+  Linux.</P>
+<UL>
+  <LI>CImage © 1995-1998, Alejandro Aguilar Sierra.<BR>
+  <LI>IJG JPEG library ©1994-1998, Thomas G. Lane.<BR>
+  <LI>LibPNG version 1.2.4 © 1998-2001 Glenn Randers-Pehrson<BR>
+  <LI>LibTIFF version 3.5.7 © 1988-1997 Sam Leffler, © 1991-1997 Silicon Graphics, 
+    Inc. 
+  <LI>LibMNG version 1.0.2 © 2000,2001 Gerard Juyn. 
+  <LI>Gif-RLE © Hutchison Avenue Software Corporation, 1998 
+  <LI>LibJ2K© David Janssens, 2001 - 2002 
+  <LI>LibJBG © Markus Kuhn, 2002
+  <LI>JasPer &copy; Michael David Adams, 2001 - 2003
+  <LI>zlib &copy; 1995-2002 Jean-loup Gailly and Mark Adler<BR>
+  
+  <LI>FreeImage 2.4.0 : Design and implementation by Floris van den Berg. 
+  <LI>Thanks to Troels Knakkergaard for his precious work in the earlier versions 
+    of CxImage, Rajiv Ramachandran for <CODE>CTwain</CODE> code; to Abe for multi 
+    page tiffs code; to Chris Shearer Cooper for memory file suggestions and code; 
+    to Brent Corkum for <CODE>BCMenu</CODE> code. </LI>
+</UL>
+<P>More specific credits and disclaimers are in every header file of each 
+library.</P>
+<H2>Compatibility</H2>
+<P>Win95,WinNT, Win98, WinME, W2K, WinXP, <A 
+href="http://www.codeproject.com/ce/png__jpg__etc_on_pocketpc.asp">WinCE</A>, <A 
+href="http://www.aoi.it/">Linux</A> = Yes 
+<P>For any questions, e-mail to: <A 
+href="mailto:ing.davide.pizzolato@libero.it">ing.davide.pizzolato@libero.it</A> 
+</P><!----------------------------- Article Ends -----------------------------></BODY></HTML>

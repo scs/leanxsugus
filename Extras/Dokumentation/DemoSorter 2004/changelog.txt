@@ -1,0 +1,10 @@
+2004-07-22	r001
+
+		First working release on the 1380x256 scanning mode (JAI camera). This is also a
+		good starting point for other projects, since the DSP software is cleaned up of
+		the Samro stuff.
+
+
+2004-09-01	r002
+
+		The definitive "Go automation" version of the sorter. It is now sorting sugus candies.

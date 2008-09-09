@@ -1,0 +1,286 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DEMOSORTERGUI_DIALOG DIALOGEX 0, 0, 548, 366
+STYLE DS_MODALFRAME | WS_POPUP
+EXSTYLE WS_EX_APPWINDOW
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Exit",IDOK,7,322,34,18,NOT WS_VISIBLE,WS_EX_TRANSPARENT
+    CONTROL         207,IDC_COLOR0,"Static",SS_BITMAP | SS_NOTIFY | 
+                    WS_TABSTOP,7,85,131,121
+    CONTROL         203,IDC_COLOR2,"Static",SS_BITMAP | SS_NOTIFY | 
+                    WS_TABSTOP,267,85,131,121
+    CONTROL         208,IDC_COLOR3,"Static",SS_BITMAP | SS_NOTIFY | 
+                    WS_TABSTOP,397,85,131,121
+    CONTROL         185,IDC_STATIC_TITLE,"Static",SS_BITMAP,7,7,534,81,
+                    WS_EX_TRANSPARENT
+    PUSHBUTTON      "Reset",IDC_RESET,7,341,34,18,NOT WS_VISIBLE,
+                    WS_EX_TRANSPARENT
+    CONTROL         "Enable Timer Requests",IDC_TIMERSEL,"Button",
+                    BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,429,342,
+                    112,17
+    LTEXT           "0 x",IDC_COUNT0,7,198,130,32,NOT WS_VISIBLE
+    LTEXT           "0 x",IDC_COUNT1,140,200,130,33,NOT WS_VISIBLE
+    LTEXT           "0 x",IDC_COUNT3,399,200,130,39,NOT WS_VISIBLE
+    LTEXT           "0 x",IDC_COUNT2,269,201,129,36,NOT WS_VISIBLE
+    CONTROL         200,IDC_COLOR1,"Static",SS_BITMAP | SS_NOTIFY | 
+                    WS_TABSTOP,137,85,131,121
+    CONTROL         205,IDC_BTN_RESET,"Static",SS_BITMAP | SS_NOTIFY | 
+                    WS_TABSTOP,217,308,124,45
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040704B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "MFC-Anwendung DemoSorterGUI\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "DemoSorterGUI\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "DemoSorterGUI.EXE\0"
+            VALUE "ProductName", "Anwendung DemoSorterGUI\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x407, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DEMOSORTERGUI_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 541
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 359
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Switzerland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DES)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_SERVICEDLG DIALOG DISCARDABLE  0, 0, 533, 367
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "DemoSorter Service Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Close Dialog",IDOK,403,294,74,18
+    COMBOBOX        IDC_IPADDR,56,111,180,91,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "IP - Address:",IDC_STATIC,7,113,45,12
+    EDITTEXT        IDC_PORT,273,111,75,14,ES_AUTOHSCROLL
+    LTEXT           "Port:",IDC_STATIC,248,113,22,11
+    PUSHBUTTON      "Connect",IDC_CONNECT,372,108,91,18
+    EDITTEXT        IDC_STATUS,95,148,374,14,ES_AUTOHSCROLL | ES_READONLY
+    LTEXT           "Connection Status of GUI:",IDC_STATIC,7,150,87,12
+    GROUPBOX        "Mode selection",IDC_STATIC,7,224,75,114
+    CONTROL         "Idle",IDC_IDLESEL,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,13,241,51,11
+    CONTROL         "Processing",IDC_PROCESSINGSEL,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,13,262,53,11
+    CONTROL         "Calibration",IDC_CALIBRATIONSEL,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,13,282,54,10
+    EDITTEXT        IDC_DEBUGTEXT,116,294,221,16,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "Debug messages:",IDC_STATIC,117,277,204,12
+    CONTROL         155,IDC_STATIC,"Static",SS_BITMAP,7,7,533,81
+    CONTROL         "Service",IDC_SERVICESEL,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,13,299,54,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_SERVICEDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 526
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 360
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 7, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\DemoSorterGUI.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.deu\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\DemoSorterGUI.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SCS_TITLE           BITMAP  DISCARDABLE     "res\\scs_title_800.bmp"
+IDB_BTN_YELLOW_UNPRESSED BITMAP  DISCARDABLE     "res\\btn_yellow_unpressed.bmp"
+IDB_BTN_RED_PRESSED     BITMAP  DISCARDABLE     "res\\btn_red_pressed.bmp"
+IDB_BTN_RED_UNPRESSED   BITMAP  DISCARDABLE     "res\\btn_red_unpressed.bmp"
+IDB_BTN_YELLOW_PRESSED  BITMAP  DISCARDABLE     "res\\btn_yellow_pressed.bmp"
+IDB_BTN_GREEN_PRESSED   BITMAP  DISCARDABLE     "res\\btn_green_pressed.bmp"
+IDB_BTN_ORANGE_UNPRESSED BITMAP  DISCARDABLE     "res\\btn_orange_unpressed.bmp"
+IDB_BTN_ORANGE_PRESSED  BITMAP  DISCARDABLE     "res\\btn_orange_pressed.bmp"
+IDB_BTN_RESET_UNPRESSED BITMAP  DISCARDABLE     "res\\btn_reset_unpressed.bmp"
+IDB_BTN_RESET_PRESSED   BITMAP  DISCARDABLE     "res\\btn_reset_pressed.bmp"
+IDB_SCS_TITLE_SMALL     BITMAP  DISCARDABLE     "res\\scs_title_new_small.bmp"
+IDB_GREEN_PRESSED       BITMAP  DISCARDABLE     "res\\green_pressed.bmp"
+IDB_ORANGE_PRESSED      BITMAP  DISCARDABLE     "res\\orange_pressed.bmp"
+IDB_ORANGE_UNPRESSED    BITMAP  DISCARDABLE     "res\\orange_unpressed.bmp"
+IDB_RED_PRESSED         BITMAP  DISCARDABLE     "res\\red_pressed.bmp"
+IDB_RED_UNPRESSED       BITMAP  DISCARDABLE     "res\\red_unpressed.bmp"
+IDB_RESET_PRESSED       BITMAP  DISCARDABLE     "res\\reset_pressed.bmp"
+IDB_RESET_UNPRESSED     BITMAP  DISCARDABLE     "res\\reset_unpressed.bmp"
+IDB_YELLOW_PRESSED      BITMAP  DISCARDABLE     "res\\yellow_pressed.bmp"
+IDB_YELLOW_UNPRESSED    BITMAP  DISCARDABLE     "res\\yellow_unpressed.bmp"
+IDB_GREEN_UNPRESSED     BITMAP  DISCARDABLE     "res\\green_unpressed.bmp"
+#endif    // German (Switzerland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE 7, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\DemoSorterGUI.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.deu\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

@@ -1,0 +1,294 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Germany) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_VISIONTEST_DIALOG DIALOGEX 0, 0, 416, 437
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_ACCEPTFILES | WS_EX_APPWINDOW
+CAPTION "VisionTest"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,324,416,85,14,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Load Images",IDC_LOADIMAGESBUTTON,324,7,85,14,0,
+                    WS_EX_STATICEDGE
+    PUSHBUTTON      "Process Single Image",IDC_PROCESSSINGLE,324,74,85,14,0,
+                    WS_EX_STATICEDGE
+    PUSHBUTTON      "Load Image Sequence",IDC_LOADIMAGESEQUENCE,324,25,85,14,
+                    0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Process All Images",IDC_PROCESSALL,324,92,85,14,0,
+                    WS_EX_STATICEDGE
+    PUSHBUTTON      "Go to first Image",IDC_GOTOFIRST,324,56,85,14,0,
+                    WS_EX_STATICEDGE
+    LISTBOX         IDC_COMPONENTLIST,7,7,126,220,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_STATICEDGE
+    LISTBOX         IDC_PORTLIST,139,7,177,90,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_STATICEDGE
+    LISTBOX         IDC_PROPERTYLIST,139,102,177,125,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_STATICEDGE
+    GROUPBOX        "Channels",IDC_STATIC,7,233,310,197
+    CONTROL         "Enable Channel",IDC_CHANNEL_ENABLE,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,411,134,13
+    LISTBOX         IDC_CHANNELLIST,17,244,109,162,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_STATICEDGE
+    LISTBOX         IDC_CHANNELPORTLIST,134,244,175,162,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_VSCROLL | 
+                    WS_TABSTOP,WS_EX_STATICEDGE
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040704B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "MFC-Anwendung VisionTest\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "VisionTest\0"
+            VALUE "LegalCopyright", "Copyright (C) 2003\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "VisionTest.EXE\0"
+            VALUE "ProductName", "Anwendung VisionTest\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x407, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_VISIONTEST_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 409
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 430
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // German (Germany) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// German (Switzerland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DES)
+#ifdef _WIN32
+LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_IMAGEDIALOG DIALOGEX 0, 0, 218, 177
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | 
+    WS_THICKFRAME
+EXSTYLE WS_EX_CLIENTEDGE
+CAPTION "Image"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+
+IDD_IMAGEDIALOGTOOLS DIALOGEX 0, 0, 191, 188
+STYLE DS_MODALFRAME | WS_POPUP
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      ">>",IDC_SHOWHIDEBUTTON,7,7,15,132,0,WS_EX_STATICEDGE
+    LISTBOX         IDC_IMAGESLIST,34,7,150,132,LBS_NOINTEGRALHEIGHT | NOT 
+                    WS_BORDER | WS_VSCROLL | WS_TABSTOP,WS_EX_STATICEDGE
+    PUSHBUTTON      "|<",IDC_REWINDBUTTON,34,143,20,16,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "[]",IDC_STOPBUTTON,86,143,20,16,0,WS_EX_STATICEDGE
+    PUSHBUTTON      ">",IDC_PLAYBUTTON,138,143,20,16,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "<-",IDC_FRAMEBACKBUTTON,60,143,20,16,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "->",IDC_FRAMENEXTBUTTON,112,143,20,16,0,
+                    WS_EX_STATICEDGE
+    PUSHBUTTON      ">|",IDC_TOENDBUTTON,164,143,20,16,0,WS_EX_STATICEDGE
+    PUSHBUTTON      "Clear",IDC_CLEARBUTTON,143,165,41,16,0,WS_EX_STATICEDGE
+    CONTROL         "Link",IDC_LINKCHECK,"Button",BS_AUTOCHECKBOX | 
+                    BS_PUSHLIKE | WS_TABSTOP,94,165,41,16,WS_EX_STATICEDGE
+END
+
+IDD_MODIFYPROPERTYDIALOG DIALOGEX 0, 0, 278, 46
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,186,25,85,14,0,WS_EX_STATICEDGE
+    CONTROL         "Cancel",IDC_CANCEL,"Button",BS_AUTOCHECKBOX | 
+                    BS_PUSHLIKE | WS_TABSTOP,186,7,85,14,WS_EX_STATICEDGE
+    EDITTEXT        IDC_PROPERTYEDIT,7,16,168,12,ES_AUTOHSCROLL | NOT 
+                    WS_BORDER,WS_EX_STATICEDGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_IMAGEDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 211
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 170
+    END
+
+    IDD_IMAGEDIALOGTOOLS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 184
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 181
+    END
+
+    IDD_MODIFYPROPERTYDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 271
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 39
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 7, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\VisionTest.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.deu\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\VisionTest.ico"
+IDI_IMAGEDIALOG         ICON    DISCARDABLE     "res\\icon1.ico"
+#endif    // German (Switzerland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)
+#ifdef _WIN32
+LANGUAGE 7, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\VisionTest.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.deu\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
