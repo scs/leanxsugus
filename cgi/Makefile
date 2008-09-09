@@ -9,8 +9,9 @@ host: www/cgi-bin/config
 	cp $(OUT) www/cgi-bin
 	cp -r www/* /var/www/
 
+.PHONY: www/cgi-bin/config
 www/cgi-bin/config:
-	mkfifo $@
+	[ -p $@ ] || mkfifo $@
 
 # Cleanup
 clean:
