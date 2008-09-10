@@ -11,6 +11,11 @@ function setElementClass(id, name) {
 	document.getElementById(id).className = name
 }
 
+// This function loads the main page.
+function loadIndex() {
+	location.href = 'index.html';
+}
+
 // This function does some magic to get an XMLHttpRequest object even in some archaic browsers.
 function getHTTPObject() {
 	var xmlHttp;

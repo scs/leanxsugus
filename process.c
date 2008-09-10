@@ -11,7 +11,7 @@
 #include "process.h"
 
 /*! @brief The file name the debug image should be written to. */
-#define IMG_FILENAME "/home/httpd/image.bmp"
+#define IMG_FILENAME "/home/httpd/images/live.bmp"
 /*! @brief The width of the debayered grayscale image. */
 #define WIDTH_GREY (WIDTH_CAPTURE / 2)
 /*! @brief The height of the debayered grayscale image. */
