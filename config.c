@@ -36,12 +36,11 @@ void config_write()
 	file = fdopen(fd, "w");
 	
 	/* Write the counts of all the sugus by color. */
-	for (i = 0; i < 4; i += 1)
-		fprintf(file, "count_color_%d=%lu\n", i, configuration.count_color[i]);
-	
-	/* Write the counts of othe other categories. */
-	fprintf(file, "count_sorted=%lu\n", configuration.count_sorted);
-	fprintf(file, "count_unknown=%lu\n", configuration.count_unknown);
+	for (i = 0; i < length (configuration.sort_color); i += 1)
+	{
+		fprintf(file, "count_color_sorted_%d=%lu\n", i, configuration.count_color_sorted[i]);
+		fprintf(file, "count_color_ignored_%d=%lu\n", i, configuration.count_color_ignored[i]);
+	}
 	
 	/* Close the file stream and descripor. */
 	fclose(file);
@@ -50,7 +49,7 @@ void config_write()
 	/* Move the journal to the final path. */
 	ret = rename(STATISTICS_FILENAME "~", STATISTICS_FILENAME);
 	if (ret)
-		printf("The statistics file could be moved to its final place.\n");
+		printf("The statistics file could not be moved to its final place.\n");
 }
 
 /*!
@@ -62,7 +61,8 @@ void config_write()
  *		- "1": Yellow sugus.
  *		- "2": Orange sugus.
  *		- "3": Red sugus.
- *	- "sort_unknown=" ( "true" | "false" ): Whether to sort sugus whose color could not be determined.
+ *		- "4": Unknown objects.
+ *		- "5": too small objects.
  *	- "valve_override_" <n> "=" ( "true" | "false" ): Whether to activate valve <n> no matter what.
  *	- "calibrating=" ( "true" | "false" ): Wheter to activate the calibration mode.
  *	- "reset_counter": Reset all the counters to zero.
@@ -125,18 +125,15 @@ void config_read()
 		{
 			t_index n = atoi(buf + 11);
 			
-			if (0 <= n && n < 4)
+			if (0 <= n && n < length (configuration.sort_color))
 				configuration.sort_color[n] = strcmp(pos, "true") == 0;
 		}
-		
-		if (strcmp(buf, "sort_unknown") == 0)
-			configuration.sort_unknown = strcmp(pos, "true") == 0;
 		
 		if (strncmp(buf, "valve_override_", 15) == 0)
 		{
 			t_index n = atoi(buf + 15);
 			
-			if (0 <= n && n < 16)
+			if (0 <= n && n < length (configuration.valve_override))
 				configuration.valve_override[n] = strcmp(pos, "true") == 0;
 		}
 		
@@ -149,33 +146,33 @@ void config_read()
 		
 		if (strcmp(buf, "reset_counters") == 0)
 		{
-			configuration.count_color[0] = 0;
-			configuration.count_color[1] = 0;
-			configuration.count_color[2] = 0;
-			configuration.count_color[3] = 0;
+			t_index i;
 			
-			configuration.count_sorted = 0;
+			for (i = 0; i < length (configuration.sort_color); i += 1)
+			{
+				configuration.count_color_sorted[i] = 0;
+				configuration.count_color_ignored[i] = 0;
+			}
 		}
 	}
 }
 
 /*! @brief Initializes the configuration subsystem, mainly sets all the configuration variables to their default value. */
 void config_init() {
-	int i;
+	t_index i;
 	
 	for (i = 0; i < length (configuration.sort_color); i += 1)
-		configuration.count_color[i] = 0;
+	{
+		configuration.count_color_sorted[i] = 0;
+		configuration.count_color_ignored[i] = 0;
+		configuration.sort_color[i] = false;
+	}
 	
 	for (i = 0; i < length (configuration.valve_override); i += 1)
 		configuration.valve_override[i] = false;
 	
-	configuration.sort_color[0] = false;
-	configuration.sort_color[1] = false;
 	configuration.sort_color[2] = true;
 	configuration.sort_color[3] = true;
 	
 	configuration.calibrating = false;
-	configuration.sort_unknown = false;
-	configuration.count_sorted = false;
-	configuration.count_sorted = 0;
 }

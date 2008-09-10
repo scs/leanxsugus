@@ -3,12 +3,12 @@ var statistics = new Object;
 
 // This function replaces the text contained by the element referenced by the given id with the given text.
 function setElementText(id, text) {
-	document.getElementById(id).firstChild.nodeValue = text
+	document.getElementById(id).firstChild.nodeValue = text;
 }
 
 // This function sets the class element of the element referenced by the given id.
 function setElementClass(id, name) {
-	document.getElementById(id).className = name
+	document.getElementById(id).className = name;
 }
 
 // This function loads the main page.
@@ -89,11 +89,10 @@ function initConfig() {
 
 // This initializes the statistics objects so the interface has something reasonable to display.
 function initStatistics() {
-	statistics.count_color_0 = 0;
-	statistics.count_color_1 = 0;
-	statistics.count_color_2 = 0;
-	statistics.count_color_3 = 0;
-	statistics.count_sorted = 0;
+	for (var i = 0; i < 6; i += 1) {
+		statistics["count_color_sorted_" + i] = 0;
+		statistics["count_color_ignored_" + i] = 0;
+	}
 }
 
 // This function is used to toggle a boolean configuration variable.
@@ -101,7 +100,6 @@ function configBool_toggle(name) {
 	configuration[name] = ! configuration[name];
 	
 	sendConfig(name, configuration[name]);
-	updateInterface();
 }
 
 // This function is used to set a boolean configuration variables.
@@ -109,7 +107,6 @@ function configBool_set(name, value) {
 	configuration[name] = value;
 	
 	sendConfig(name, value);
-	updateInterface();
 }
 
 // This function is used to reset a unit configuration variable (ie. a trigger).
@@ -146,7 +143,7 @@ function getStatistics() {
 			for (var i in vars) {
 				var ii = vars[i].split("=");
 				
-				statistics[ii[0]] = ii[1];
+				statistics[ii[0]] = parseInt(ii[1], 10);
 			}
 			
 			// Update the interface.
@@ -166,7 +163,7 @@ function getStatistics() {
 // Thos functio updates the interface according to the configuration and statistics file.
 function updateInterface() {
 	var classes = new Object;
-	var count_total = 0;
+	var count_sorted = 0, count_ignored = 0;
 	
 	// This is used to set the CSS class of the buttons according to their state.
 	classes[false] = "inaktiv";
@@ -179,18 +176,24 @@ function updateInterface() {
 	setElementClass("sort_color_3", classes[configuration.sort_color_3]);
 	
 	// Set the counters.
-	setElementText("count_color_0", statistics.count_color_0);
-	setElementText("count_color_1", statistics.count_color_1);
-	setElementText("count_color_2", statistics.count_color_2);
-	setElementText("count_color_3", statistics.count_color_3);
+	setElementText("count_color_0", statistics.count_color_sorted_0 + statistics.count_color_ignored_0);
+	setElementText("count_color_1", statistics.count_color_sorted_1 + statistics.count_color_ignored_1);
+	setElementText("count_color_2", statistics.count_color_sorted_2 + statistics.count_color_ignored_2);
+	setElementText("count_color_3", statistics.count_color_sorted_3 + statistics.count_color_ignored_3);
 	
-	// Compute the total of objects.
-	count_total += parseInt(statistics.count_color_0, 10)
-	count_total += parseInt(statistics.count_color_1, 10)
-	count_total += parseInt(statistics.count_color_2, 10)
-	count_total += parseInt(statistics.count_color_3, 10)
+	// Compute the total of sorted objects.
+	count_sorted += statistics.count_color_sorted_0;
+	count_sorted += statistics.count_color_sorted_1;
+	count_sorted += statistics.count_color_sorted_2;
+	count_sorted += statistics.count_color_sorted_3;
+	
+	// Compute the total of ignored objects.
+	count_ignored += statistics.count_color_ignored_0;
+	count_ignored += statistics.count_color_ignored_1;
+	count_ignored += statistics.count_color_ignored_2;
+	count_ignored += statistics.count_color_ignored_3;
 	
 	// Set the total and sorted counter.
-	setElementText("count_sorted", statistics.count_sorted);
-	setElementText("count_total", count_total);
+	setElementText("count_sorted", count_sorted);
+	setElementText("count_total", count_sorted + count_ignored);
 }

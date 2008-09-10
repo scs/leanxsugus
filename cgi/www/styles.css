@@ -27,7 +27,7 @@ h2 {
 }
 
 .image-prosa {
-	float: center;
+	text-align: center;
 	padding-top: 35px;
 }
 

@@ -28,12 +28,12 @@ struct {
 
 /*! @brief This classifies an object. */
 typedef enum {
-	e_classification_sugusRed,
-	e_classification_sugusGreen,
-	e_classification_sugusOrange,
-	e_classification_sugusYellow,
-	e_classification_unknown,
-	e_classification_tooSmall,
+	e_classification_sugusRed = 0,
+	e_classification_sugusGreen = 1,
+	e_classification_sugusOrange = 2,
+	e_classification_sugusYellow = 3,
+	e_classification_unknown = 4,
+	e_classification_tooSmall = 5
 } e_classification;
 
 /*! @brief This contains a color value. */
@@ -710,51 +710,23 @@ benchmark_delta;
 		/* Print a line for each found object. */
 		for (obj = objs; obj != NULL; obj = obj->pNext)
 		{
+			char const * const color_names[] = { "green", "yellow", "orange", "red", "unknown", "too small" };
+			
 			/* Print a line for each object. */
-			printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u)", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue);
+			printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u) -> %s%s\n", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue, color_names[obj->classification], obj->isDuplicate ? " (duplicate)" : "");
 			
-			if (obj->classification == e_classification_tooSmall)
-				printf(" -> too small");
-			else if (obj->classification == e_classification_sugusGreen)
-				printf(" -> green");
-			else if (obj->classification == e_classification_sugusYellow)
-				printf(" -> yellow");
-			else if (obj->classification == e_classification_sugusOrange)
-				printf(" -> orange");
-			else if (obj->classification == e_classification_sugusRed)
-				printf(" -> red");
-			else if (obj->classification == e_classification_unknown)
-				printf(" -> unknown");
-			
-			if (obj->isDuplicate)
-				printf(" (duplicate)\n");
-			else
-				printf("\n");
+			printf("obj->classification: %d\n", obj->classification);
 			
 			/* Update the counters. */
 			if (! obj->isDuplicate)
-			{
-				if (obj->classification == e_classification_sugusGreen)
-					configuration.count_color[0] += 1;
-				else if (obj->classification == e_classification_sugusYellow)
-					configuration.count_color[1] += 1;
-				else if (obj->classification == e_classification_sugusOrange)
-					configuration.count_color[2] += 1;
-				else if (obj->classification == e_classification_sugusRed)
-					configuration.count_color[3] += 1;
-				else if (obj->classification == e_classification_unknown)
-					configuration.count_unknown += 1;
-			}
+				if (configuration.sort_color[obj->classification])
+					configuration.count_color_sorted[obj->classification] += 1;
+				else
+					configuration.count_color_ignored[obj->classification] += 1;
 			
 			/* Check whether we should sort out this object. */
-			if ((obj->classification == e_classification_sugusGreen) && configuration.sort_color[0] || (obj->classification == e_classification_sugusYellow) && configuration.sort_color[1] || (obj->classification == e_classification_sugusOrange) && configuration.sort_color[2] || (obj->classification == e_classification_sugusRed) && configuration.sort_color[3] || (obj->classification == e_classification_unknown) && configuration.sort_unknown)
-			{
+			if (configuration.sort_color[obj->classification])
 				insertIntoValves(obj, capture_time);
-				
-				/* Update the counter of sorted objects.. */
-				if (! obj->isDuplicate)
-					configuration.count_sorted += 1;
-			}
 		}
 		
 		/* Write out an image to be picked up by the web interface if we're in calibration mode. */
