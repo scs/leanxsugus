@@ -20,14 +20,12 @@ PEDANTIC = # -pedantic
 
 # Host-Compiler executables and flags
 HOST_CC = gcc 
-HOST_CFLAGS = $(HOST_FEATURES) -Wall $(PEDANTIC) -DOSC_HOST -g
+HOST_CFLAGS = $(HOST_FEATURES) -Wall $(PEDANTIC) -D OSC_HOST
 HOST_LDFLAGS = -lm
 
 # Cross-Compiler executables and flags
 TARGET_CC = bfin-uclinux-gcc 
-TARGET_CFLAGS = -Wall $(PEDANTIC) -O2 -DOSC_TARGET
-TARGETDBG_CFLAGS = -Wall $(PEDANTIC) -ggdb3 -DOSC_TARGET
-TARGETSIM_CFLAGS = -Wall $(PEDANTIC) -O2 -DOSC_TARGET -DOSC_SIM
+TARGET_CFLAGS = -Wall $(PEDANTIC) -O2 -D OSC_TARGET
 TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576" -lbfdsp
 
 # Source files of the application
@@ -51,22 +49,6 @@ target: $(SOURCES) inc/*.h lib/libosc_target.a
 	make target -C cgi
 	@ echo "Target cgi done."
 	! [ -d /tftpboot ] || cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
-
-targetdbg: $(SOURCES) inc/*.h lib/libosc_target.a
-	@ echo "Compiling for target..."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGETDBG_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@ echo "Target executable done."
-	make targetdbg -C cgi
-	@ echo "Target cgi done."
-	! [ -d /tftpboot ] || cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
-
-targetsim: $(SOURCES) inc/*.h lib/libosc_target_sim.a
-	@ echo "Compiling for target..."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target_sim.a $(TARGETSIM_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGETSIM_SUFFIX)
-	@ echo "Target executable done."
-	make target -C cgi
-	@ echo "Target cgi done."
-	! [ -d /tftpboot ] || cp $(OUT)$(TARGETSIM_SUFFIX) /tftpboot/$(OUT)
 
 host: $(SOURCES) inc/*.h lib/libosc_host.a
 	@ echo "Compiling for host.."
@@ -101,14 +83,6 @@ get:
 deploy: $(OUT)$(TARGET_SUFFIX)
 	rcp -rp runapp.sh root@$(CONFIG_TARGET_IP):/app/
 	rcp -rp $(OUT)$(TARGET_SUFFIX) root@$(CONFIG_TARGET_IP):/app/$(OUT)
-	rcp -rp cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/app/
-	@ echo "Application deployed."
-
-# deploying the simulation binary to the device
-.PHONY: deploysim
-deploysim: $(OUT)$(TARGETSIM_SUFFIX)
-	rcp -rp runapp.sh root@$(CONFIG_TARGET_IP):/app/
-	rcp -rp $(OUT)$(TARGETSIM_SUFFIX) root@$(CONFIG_TARGET_IP):/app/$(OUT)
 	rcp -rp cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/app/
 	@ echo "Application deployed."
 
