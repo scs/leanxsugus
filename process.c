@@ -28,10 +28,10 @@ struct {
 
 /*! @brief This classifies an object. */
 typedef enum {
-	e_classification_sugusRed = 0,
-	e_classification_sugusGreen = 1,
+	e_classification_sugusGreen = 0,
+	e_classification_sugusYellow = 1,
 	e_classification_sugusOrange = 2,
-	e_classification_sugusYellow = 3,
+	e_classification_sugusRed = 3,
 	e_classification_unknown = 4,
 	e_classification_tooSmall = 5
 } e_classification;
