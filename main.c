@@ -88,7 +88,7 @@ static OSC_ERR init(const int argc, const char * * argv)
 	return SUCCESS;
 	
 fb_err:
-	OscUnloadDependencies(hFramework, deps, sizeof(deps)/sizeof(struct OSC_DEPENDENCY));
+	OscUnloadDependencies(hFramework, deps, length (deps));
 	
 dep_err:
 	OscDestroy(&hFramework);
@@ -99,9 +99,7 @@ dep_err:
 OSC_ERR Unload()
 {
 	/* Unload the framework module dependencies */
-	OscUnloadDependencies(hFramework,
-			deps,
-			sizeof(deps)/sizeof(struct OSC_DEPENDENCY));
+	OscUnloadDependencies(hFramework, deps, length (deps));
 	
 	OscDestroy(hFramework);
 	

@@ -713,7 +713,7 @@ benchmark_delta;
 			char const * const color_names[] = { "green", "yellow", "orange", "red", "unknown", "too small" };
 			
 			/* Print a line for each object. */
-		//	printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u) -> %s%s\n", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue, color_names[obj->classification], obj->isDuplicate ? " (duplicate)" : "");
+			printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u) -> %s%s\n", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue, color_names[obj->classification], obj->isDuplicate ? " (duplicate)" : "");
 			
 			/* Update the counters. */
 			if (! obj->isDuplicate)

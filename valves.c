@@ -13,8 +13,8 @@
 #include "valves.h"
 
 /* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
-#define TUNE_VALVES_ON ((uint32) CPU_FREQ / 1000 * -30)
-#define TUNE_VALVES_OFF ((uint32) CPU_FREQ / 1000 * 0)
+#define TUNE_VALVES_ON ((uint32) CPU_FREQ / 1000 * -20)
+#define TUNE_VALVES_OFF ((uint32) CPU_FREQ / 1000 * 10)
 
 /* This sets to handle the valves a hundred times per second. */
 #define INTERVAL ((uint32) CPU_FREQ / 100)
@@ -46,6 +46,10 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	int32 const time_end = end_time - valves.next_time + TUNE_VALVES_OFF;
 	t_index i, j, ahead_begin, ahead_end;
 	
+	assert (begin_time >= valves.next_time);
+	assert (first_valve >= 0);
+	assert (last_valve < 16);
+	
 	if (time_begin < 0)
 		ahead_begin = 0;
 	else
@@ -56,9 +60,7 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	else
 		ahead_end = time_end / INTERVAL + 1;
 	
-	assert (begin_time >= valves.next_time);
-	assert (first_valve >= 0);
-	assert (last_valve < 16);
+	printf("Ahead: (%d, %d), Valves: (%d, %d)\n", ahead_begin, ahead_end, first_valve, last_valve);
 	
 	/* The valves are addressed from the right to the left relative to the picture of the camera. */
 	for (i = ahead_begin; i < ahead_end; i += 1)
