@@ -10,73 +10,75 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       145,          7]
-NotebookDataLength[      2915,         91]
-NotebookOptionsPosition[      2648,         77]
-NotebookOutlinePosition[      3004,         93]
-CellTagsIndexPosition[      2961,         90]
+NotebookDataLength[      3352,         97]
+NotebookOptionsPosition[      2975,         79]
+NotebookOutlinePosition[      3332,         95]
+CellTagsIndexPosition[      3289,         92]
 WindowFrame->Normal
 ContainsDynamic->False*)
 
 (* Beginning of Notebook Content *)
 Notebook[{
+Cell[BoxData[
+ RowBox[{
+  RowBox[{"generate", "[", "path_String", "]"}], ":=", 
+  RowBox[{"Export", "[", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"name", "<>", "\"\<.pdf\>\""}], ",", "\[IndentingNewLine]", 
+    RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
+     RowBox[{"{", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"EdgeForm", "[", 
+        RowBox[{"{", 
+         RowBox[{"White", ",", 
+          RowBox[{"AbsoluteThickness", "[", "1", "]"}]}], "}"}], "]"}], ",", 
+       "\[IndentingNewLine]", 
+       RowBox[{"MapIndexed", "[", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"#", ",", 
+            RowBox[{"Rectangle", "[", "#2", "]"}]}], "}"}], "&"}], ",", 
+         RowBox[{
+          RowBox[{"Import", "[", 
+           RowBox[{
+            RowBox[{"name", "<>", "\"\<.png\>\""}], ",", 
+            "\"\<RGBColorArray\>\""}], "]"}], "//", "Transpose"}], ",", 
+         RowBox[{"{", "2", "}"}]}], "]"}]}], "\[IndentingNewLine]", "}"}], 
+     "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}]], "Input",\
+
+ CellChangeTimes->{{3.430207062055909*^9, 3.4302071137151423`*^9}}],
+
+Cell[CellGroupData[{
+
 Cell[BoxData[{
  RowBox[{
   RowBox[{
   "name", "=", 
    "\"\</Users/michi/Documents/LeanXcam/source/LeanXsugus/Extras/\
-Dokumentation/Grafiken/Debayering/Original\>\""}], 
+Dokumentation/Grafiken/Debayering/Pattern\>\""}], 
   ";"}], "\[IndentingNewLine]", 
- RowBox[{
-  RowBox[{
-   RowBox[{
-    RowBox[{"Import", "[", 
-     RowBox[{"name", "<>", "\"\<.png\>\""}], "]"}], "\[LeftDoubleBracket]", 
-    RowBox[{"1", ",", "1"}], "\[RightDoubleBracket]"}], "/", "255"}], 
-  ";"}], "\[IndentingNewLine]", 
- RowBox[{
-  RowBox[{"Replace", "[", 
-   RowBox[{"%", ",", 
-    RowBox[{"{", 
-     RowBox[{
-      RowBox[{
-       RowBox[{"a", ":", 
-        RowBox[{"{", 
-         RowBox[{"_", ",", "_", ",", "__"}], "}"}]}], "\[RuleDelayed]", 
-       RowBox[{"RGBColor", "[", "a", "]"}]}], ",", 
-      RowBox[{"a_", "\[RuleDelayed]", 
-       RowBox[{"GrayLevel", "[", "a", "]"}]}]}], "}"}], ",", 
-    RowBox[{"{", "2", "}"}]}], "]"}], ";"}], "\[IndentingNewLine]", 
- RowBox[{"Graphics", "[", "\[IndentingNewLine]", 
-  RowBox[{"{", "\[IndentingNewLine]", 
-   RowBox[{
-    RowBox[{"EdgeForm", "[", 
-     RowBox[{"{", 
-      RowBox[{"White", ",", 
-       RowBox[{"AbsoluteThickness", "[", "1", "]"}]}], "}"}], "]"}], ",", 
-    "\[IndentingNewLine]", 
-    RowBox[{"MapIndexed", "[", 
-     RowBox[{
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"#", ",", 
-         RowBox[{"Rectangle", "[", "#2", "]"}]}], "}"}], "&"}], ",", 
-      RowBox[{"%", "//", "Transpose"}], ",", 
-      RowBox[{"{", "2", "}"}]}], "]"}]}], "\[IndentingNewLine]", "}"}], 
-  "\[IndentingNewLine]", "]"}], "\[IndentingNewLine]", 
- RowBox[{
-  RowBox[{"Export", "[", 
-   RowBox[{
-    RowBox[{"name", "<>", "\"\<.pdf\>\""}], ",", " ", "%"}], "]"}], 
-  ";"}]}], "Input",
+ RowBox[{"generate", "[", "name", "]"}]}], "Input",
  CellChangeTimes->{{3.4295255156344748`*^9, 3.4295256100752897`*^9}, {
-  3.429525668424567*^9, 3.429525701431078*^9}, {3.4295257441792383`*^9, 
-  3.429525776074698*^9}, {3.42952581227794*^9, 3.429526013044853*^9}, {
-  3.429526056248481*^9, 3.429526106095728*^9}, {3.4295261486201277`*^9, 
-  3.42952620070052*^9}, {3.429526237391334*^9, 3.429526285125404*^9}, {
-  3.429526325369093*^9, 3.429526584337331*^9}}]
+   3.429525668424567*^9, 3.429525701431078*^9}, {3.4295257441792383`*^9, 
+   3.429525776074698*^9}, {3.42952581227794*^9, 3.429526013044853*^9}, {
+   3.429526056248481*^9, 3.429526106095728*^9}, {3.4295261486201277`*^9, 
+   3.42952620070052*^9}, {3.429526237391334*^9, 3.429526285125404*^9}, {
+   3.429526325369093*^9, 3.429526584337331*^9}, {3.430206793591057*^9, 
+   3.430206819642066*^9}, {3.430206867503228*^9, 3.430206876966107*^9}, {
+   3.430206909599264*^9, 3.430206926244708*^9}, 3.430207085475485*^9, {
+   3.430207122541333*^9, 3.430207135963455*^9}}],
+
+Cell[BoxData["\<\"/Users/michi/Documents/LeanXcam/source/LeanXsugus/Extras/\
+Dokumentation/Grafiken/Debayering/Pattern.pdf\"\>"], "Output",
+ CellChangeTimes->{
+  3.4302067761682453`*^9, {3.430206870985111*^9, 3.430206877315084*^9}, {
+   3.4302069102549458`*^9, 3.430206922284453*^9}, {3.430207127007453*^9, 
+   3.43020713679032*^9}}]
+}, Open  ]]
 },
 WindowSize->{640, 750},
-WindowMargins->{{Automatic, 95}, {Automatic, 0}},
+WindowMargins->{{157, Automatic}, {Automatic, 0}},
 ShowSelection->True,
 FrontEndVersion->"6.0 for Mac OS X x86 (32-bit) (June 19, 2007)",
 StyleDefinitions->"Default.nb"
@@ -92,7 +94,11 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[568, 21, 2076, 54, 193, "Input"]
+Cell[568, 21, 1144, 28, 163, "Input"],
+Cell[CellGroupData[{
+Cell[1737, 53, 886, 16, 73, "Input"],
+Cell[2626, 71, 333, 5, 43, "Output"]
+}, Open  ]]
 }
 ]
 *)
