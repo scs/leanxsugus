@@ -73,7 +73,7 @@ typedef struct {
 		bool isDuplicate;
 		/*! @brief Pointers to adjacent elements in the linked list. */
 		struct object * pPrev, * pNext;
-	} objects[100];
+	} objects[200];
 	
 	/*! @brief Pointers the first objects in the linked lists. */
 	struct object * pFirst[3];
@@ -554,25 +554,14 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 		}
 		else
 		{
-		//	s_color const color = obj->color;
-			s_color colorFill, colorBorder;
 			int16 spotPosX, spotPosY;
-			s_color color;
-			
-			if (obj->classification == e_classification_sugusGreen)
-				color = green;
-			else if (obj->classification == e_classification_sugusYellow)
-				color = yellow;
-			else if (obj->classification == e_classification_sugusOrange)
-				color = orange;
-			else if (obj->classification == e_classification_sugusRed)
-				color = red;
-			else
-				color = black;
+			s_color colorFill, colorBorder;
+			s_color colors[] = { green, yellow, orange, red, black, black };
+			s_color color = obj->color;
 			
 			drawRectangle(data.imgColor, WIDTH_CAPTURE, obj->left * 2, obj->right * 2, obj->top * 2, obj->bottom * 2, green);
 			
-			colorFill = color;
+			colorFill = colors[obj->classification];
 			colorBorder = (color.red + color.green + color.blue) > (255 * 3 / 2) ? black : white;
 			
 			spotPosX = obj->posWghtX * 2 - spotSize / 2;
