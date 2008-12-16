@@ -8,7 +8,7 @@
 #define SUPPORT_H_
 
 #include <stdio.h>
-#include "inc/oscar.h"
+#include "oscar/staging/inc/oscar.h"
 
 /*! @brief A type used for indexing stuff, like in loops. */
 typedef int16 t_index;

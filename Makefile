@@ -42,17 +42,17 @@ $(OUT)_%:
 	@ exit 1
 
 # Compiles the executable
-target: $(SOURCES) inc/*.h lib/libosc_target.a
+target: $(SOURCES) oscar/staging/inc/*.h oscar/staging/lib/libosc_target.a
 	@ echo "Compiling for target..."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
+	$(TARGET_CC) $(SOURCES) oscar/staging/lib/libosc_target.a $(TARGET_CFLAGS) $(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@ echo "Target executable done."
 	make target -C cgi
 	@ echo "Target cgi done."
 	! [ -d /tftpboot ] || cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
 
-host: $(SOURCES) inc/*.h lib/libosc_host.a
+host: $(SOURCES) oscar/staging/inc/*.h oscar/staging/lib/libosc_host.a
 	@ echo "Compiling for host.."
-	$(HOST_CC) $(SOURCES) lib/libosc_host.a $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
+	$(HOST_CC) $(SOURCES) oscar/staging/lib/libosc_host.a $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
 	@ echo "Host executable done."
 	make host -C cgi
 	@ echo "Host cgi done."
@@ -68,15 +68,14 @@ doc:
 .PHONY: config
 config:
 	@ ./configure
-	@ $(MAKE) --no-print-directory get
+
+oscar/staging/inc/*.h oscar/staging/lib/*.h:
+	make oscar
 
 # Set symlinks to the framework
-.PHONY: get
-get:
-	@ rm -rf inc lib
-	@ ln -s $(CONFIG_FRAMEWORK)/staging/inc ./inc
-	@ ln -s $(CONFIG_FRAMEWORK)/staging/lib ./lib
-	@ echo "Configured Oscar framework."
+.PHONY: oscar
+oscar:
+	make -C oscar
 
 # deploying to the device
 .PHONY: deploy

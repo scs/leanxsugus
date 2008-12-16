@@ -2,7 +2,7 @@
 # Script to generate the configuration '.config' file for the framework
 
 trim() {
-	# trim $1: cut of leading and trailing white space
+	# trim $1: cut off leading and trailing white space
 	# $1: the string to trim
 	
 	echo "$1" | grep -oE "[^ \t\n].*[^ \t\n]"
@@ -45,9 +45,9 @@ ask() {
 
 # global parameters
 CONFIG_FILE=".config"
-CONFIG_NAMES=(CONFIG_FRAMEWORK CONFIG_TARGET_IP)
-CONFIG_PROMPTS=("Enter the path to the framework you want to use", "Enter the IP address of the target device")
-CONFIG_VALUES=("../oscar" "")
+CONFIG_NAMES=(CONFIG_TARGET_IP)
+CONFIG_PROMPTS=("Enter the IP address of the target device")
+CONFIG_VALUES=("192.168.1.10")
 
 # load the configurations
 for i in ${!CONFIG_NAMES[*]}; do
