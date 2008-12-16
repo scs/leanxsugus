@@ -10,6 +10,8 @@
 #include "config.h"
 #include "process.h"
 
+#include <stdbool.h>
+
 /*! @brief The file name the debug image should be written to. */
 #define IMG_FILENAME "/home/httpd/images/live.bmp"
 /*! @brief The width of the debayered grayscale image. */
@@ -589,7 +591,7 @@ void writeNiceDebugPicture(uint8 const * const pRawImg, struct object * const pO
 		
 		pic.width = WIDTH_CAPTURE;
 		pic.height = HEIGHT_CAPTURE;
-		pic.type = OSC_PICTURE_RGB_24;
+		pic.type = OSC_PICTURE_BGR_24;
 		pic.data = (void *) data.imgColor;
 		
 		/* We first write the image to a journal file and the move it over to the actual path atomically. */

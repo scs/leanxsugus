@@ -34,7 +34,8 @@ struct OSC_DEPENDENCY deps[] = {
 	{ "sup", OscSupCreate, OscSupDestroy },
 	{ "bmp", OscBmpCreate, OscBmpDestroy },
 	{ "cam", OscCamCreate, OscCamDestroy },
-	{ "vis", OscVisCreate, OscVisDestroy }
+	{ "vis", OscVisCreate, OscVisDestroy },
+	{ "gpio", OscGpioCreate, OscGpioDestroy }
 };
 
 /*!
@@ -150,10 +151,18 @@ OSC_ERR mainLoop() {
 		
 	retry:
 		/* This starts the capture and records the time. */
-		err = OscCamSetupCapture(0, OSC_CAM_TRIGGER_MODE_MANUAL);
+		err = OscCamSetupCapture(0);
 		if (err != SUCCESS)
 		{
-			OscLog(ERROR, "%s: Unable to trigger the capture (%d)!\n", __func__, err);
+			OscLog(ERROR, "%s: Unable to setup the capture (%d)!\n", __func__, err);
+			goto retry;
+		}
+		
+		/* This starts the capture and records the time. */
+		err = OscGpioTriggerImage();
+		if (err != SUCCESS)
+		{
+			OscLog(ERROR, "%s: Unable to trigger the image (%d)!\n", __func__, err);
 			goto retry;
 		}
 		capture_time = OscSupCycGet();

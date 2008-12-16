@@ -12,6 +12,8 @@
 #include "config.h"
 #include "valves.h"
 
+#include <stdbool.h>
+
 /* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
 #define TUNE_VALVES_ON ((uint32) CPU_FREQ / 1000 * -20)
 #define TUNE_VALVES_OFF ((uint32) CPU_FREQ / 1000 * 10)
