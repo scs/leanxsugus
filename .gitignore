@@ -1,14 +1,10 @@
 # Ignore working files
-lcv_log
-lcv_simlog
-leanxsugus_host
-leanxsugus_target
-osc_log
-osc_simlog
+/leanxsugus
+/leanxsugus_host
 
 # Ignore generated binaries
 *.[oa]
 *.gdb
 
 # Ignore files used by the build system
-.config
+/.config
