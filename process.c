@@ -623,7 +623,7 @@ inline void insertIntoValves(struct object * pObj, t_time capture_time)
 	t_time const time_bottom = TIME_TO_VALVES - posToTime(pObj->bottom);
 	t_index const valve_begin = max(0, posToValve(pObj->left) - 1);
 	t_index const valve_end = min(15, posToValve(pObj->right) + 1);
-
+	
 #ifdef DEBUG
 	if (time_bottom > time_top)
 		printf("Top: %d, Bottom: %d\n", pObj->top, pObj->bottom);
@@ -680,11 +680,11 @@ benchmark_init;
 	
 	/* Debayers the image to a greyscale image with half the dimensions. */
 	err = OscVisDebayerGreyscaleHalfSize(pRawImg, WIDTH_CAPTURE, HEIGHT_CAPTURE, data.enBayerOrder, data.imgGrey);
-
+	
 benchmark_delta;
 	
 	valves_handleValves();
-
+	
 	{
 		/* Detect the objects on the image. */
 		struct object * const objs = findObjects(&objPool, thresholdValue), * obj;
@@ -724,9 +724,9 @@ benchmark_delta;
 		/* Write out an image to be picked up by the web interface if we're in calibration mode. */
 		if (configuration.calibrating)
 			writeNiceDebugPicture(pRawImg, objs, 8);
-			
+		
 	benchmark_delta;
-	
+		
 		printf("\n");
 	}
 }

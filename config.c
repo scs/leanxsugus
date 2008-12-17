@@ -120,7 +120,7 @@ void config_read()
 	{	/* There was an equals sign at pos. */
 		*pos = 0; /* End the first part of the line. */
 		pos += 1; /* Move into the second part of the string. */
-
+		
 #ifdef DEBUG
 		printf("%s = %s\n", buf, pos);
 #endif
@@ -146,7 +146,6 @@ void config_read()
 	}
 	else
 	{	/* There was no equals sign. */
-
 #ifdef DEBUG
 		printf("%s\n", buf);
 #endif
