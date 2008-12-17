@@ -61,7 +61,12 @@ oscar:
 # deploying to the device
 .PHONY: deploy
 deploy: leanxsugus cgi/www.tar.gz
-	scp -p runapp.sh leanxsugus cgi/www.tar.gz $(CONFIG_TARGET_IP):/mnt/app/
+	- scp -p runapp.sh leanxsugus cgi/www.tar.gz $(CONFIG_TARGET_IP):/mnt/app/
+# for some reason, scp exits with 1 after a success (as it does when something goes wrong).
+
+.PHONY: run
+run: | deploy
+	ssh $(CONFIG_TARGET_IP) /mnt/app/runapp.sh
 
 # Cleanup
 .PHONY: clean
