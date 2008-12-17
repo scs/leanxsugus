@@ -35,6 +35,7 @@ leanxsugus: $(SOURCES) oscar/staging/inc/* oscar/staging/lib/*
 leanxsugus_host: $(SOURCES) oscar/staging/inc/* oscar/staging/lib/*
 	$(HOST_CC) $(SOURCES) oscar/staging/lib/libosc_host.a $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@
 
+.PHONY: cgi/www.tar.gz
 cgi/www.tar.gz:
 	make -C cgi www.tar.gz
 
