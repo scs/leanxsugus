@@ -4,13 +4,12 @@
  * This file contains the main processing functionality of the application. These functions are responsible for recognizing and classifying the objects and generate events that are then sent to the valve subsystem.
  */
 
-#define ASSERTS_ENABLE
+// #define DEBUG
+// #define ASSERTS_ENABLE
 
 #include "valves.h"
 #include "config.h"
 #include "process.h"
-
-#include <stdbool.h>
 
 /*! @brief The file name the debug image should be written to. */
 #define IMG_FILENAME "/home/httpd/images/live.bmp"
@@ -624,9 +623,11 @@ inline void insertIntoValves(struct object * pObj, t_time capture_time)
 	t_time const time_bottom = TIME_TO_VALVES - posToTime(pObj->bottom);
 	t_index const valve_begin = max(0, posToValve(pObj->left) - 1);
 	t_index const valve_end = min(15, posToValve(pObj->right) + 1);
-	
+
+#ifdef DEBUG
 	if (time_bottom > time_top)
 		printf("Top: %d, Bottom: %d\n", pObj->top, pObj->bottom);
+#endif
 	
 	valves_insertEvent(capture_time + time_bottom, capture_time + time_top, valve_begin, valve_end);
 }
@@ -704,7 +705,9 @@ benchmark_delta;
 			char const * const color_names[] = { "green", "yellow", "orange", "red", "unknown", "too small" };
 			
 			/* Print a line for each object. */
+#ifdef DEBUG
 			printf("Position: (%lu, %lu), Weight: %lu, Color: (%u, %u, %u) -> %s%s\n", obj->posWghtX, obj->posWghtY, obj->weight, obj->color.red, obj->color.green, obj->color.blue, color_names[obj->classification], obj->isDuplicate ? " (duplicate)" : "");
+#endif
 			
 			/* Update the counters. */
 			if (! obj->isDuplicate)

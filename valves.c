@@ -7,12 +7,11 @@
 #include <unistd.h>
 
 #define ASSERTS_ENABLE
+// #define DEBUG
 
 #include "modbus.h"
 #include "config.h"
 #include "valves.h"
-
-#include <stdbool.h>
 
 /* This value may be used to adjust the timing of the valves. Larger values delay the activation of the valves. */
 #define TUNE_VALVES_ON ((uint32) CPU_FREQ / 1000 * -20)
@@ -62,7 +61,9 @@ void valves_insertEvent(t_time const begin_time, t_time const end_time, t_index 
 	else
 		ahead_end = time_end / INTERVAL + 1;
 	
+#ifdef DEBUG
 	printf("Ahead: (%d, %d), Valves: (%d, %d)\n", ahead_begin, ahead_end, first_valve, last_valve);
+#endif
 	
 	/* The valves are addressed from the right to the left relative to the picture of the camera. */
 	for (i = ahead_begin; i < ahead_end; i += 1)

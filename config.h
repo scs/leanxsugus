@@ -3,8 +3,6 @@
 
 #include "support.h"
 
-#include <stdbool.h>
-
 struct {
 	/*! @brief Whether to sort each color of sugus respectively. */
 	bool sort_color[6];

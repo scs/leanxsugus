@@ -8,6 +8,8 @@
 #define SUPPORT_H_
 
 #include <stdio.h>
+#include <stdbool.h>
+
 #include "oscar/staging/inc/oscar.h"
 
 /*! @brief A type used for indexing stuff, like in loops. */

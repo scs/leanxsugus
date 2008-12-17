@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-//#define BENCHMARK_ENABLE
+// #define BENCHMARK_ENABLE
 
 #include "process.h"
 #include "config.h"
