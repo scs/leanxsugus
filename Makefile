@@ -75,9 +75,9 @@ clean:
 	rm -rf doc/{html,latex,index.html}
 	rm -f *.o *.gdb
 	$(MAKE) -C cgi clean
+	$(MAKE) -C oscar clean
 
 # Cleans everything not intended for source distribution
 .PHONY: distclean
 distclean: clean
 	rm -f .config
-	rm -rf inc lib
