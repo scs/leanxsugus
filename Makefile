@@ -47,6 +47,7 @@ doc:
 # Target to explicitly start the configuration process
 .PHONY: config
 config:
+	$(MAKE) -C oscar config
 	@ ./configure
 
 # This enables the automatic building of the oscar framework
@@ -81,3 +82,4 @@ clean:
 .PHONY: distclean
 distclean: clean
 	rm -f .config
+	$(MAKE) -C oscar distclean
