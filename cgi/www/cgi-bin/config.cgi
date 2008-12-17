@@ -1,2 +1,2 @@
 #! /bin/msh
-cat > config
+cat > config; echo; echo
